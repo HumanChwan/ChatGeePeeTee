@@ -9,3 +9,51 @@ datasource db {
   provider = "mysql"
   url      = env("DATABASE_URL")
 }
+
+model User {
+  id         String   @id @db.VarChar(100)
+  username   String   @unique @db.VarChar(100)
+  email      String   @unique @db.VarChar(100)
+  name       String   @db.VarChar(100)
+  createdAt  DateTime @default(now()) @map("created_at")
+  password   String   @db.VarChar(100)
+  picture    String?  @db.VarChar(100)
+  online     Boolean
+  lastOnline DateTime @map("last_online")
+
+  participation Member[]
+}
+
+model Chat {
+  id        String   @id @db.VarChar(100)
+  dm        Boolean
+  name      String?  @db.VarChar(100)
+  picture   String?  @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  participants Member[]
+}
+
+model Member {
+  id    String  @id @db.VarChar(100)
+  uid   String  @db.VarChar(100)
+  cid   String  @db.VarChar(100)
+  admin Boolean
+
+  messages Message[]
+
+  user User @relation(fields: [uid], references: [id])
+  chat Chat @relation(fields: [cid], references: [id])
+
+  @@unique([uid, cid])
+}
+
+model Message {
+  id        String   @id @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+  mid       String   @db.VarChar(100)
+  content   String?  @db.VarChar(100)
+  filePath  String?  @db.VarChar(100)
+
+  sender Member @relation(fields: [mid], references: [id])
+}
