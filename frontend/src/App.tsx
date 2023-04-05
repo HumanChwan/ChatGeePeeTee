@@ -1,13 +1,7 @@
-import type { Component } from 'solid-js';
+import type { Component } from "solid-js";
 
 const App: Component = () => {
-  return (
-    <div>
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-    </div>
-  );
+    return <div>Hello, World</div>;
 };
 
 export default App;
