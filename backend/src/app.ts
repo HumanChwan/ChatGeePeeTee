@@ -3,6 +3,7 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 
 import { CLIENT_URL } from "./config/config";
+import { login, logout, signup } from "./controllers/authentication";
 
 const app: Express = express();
 
@@ -17,5 +18,9 @@ app.use(
         credentials: true,
     })
 );
+
+app.get('/signup', signup)
+app.get('/login', login)
+app.get('/logout', logout)
 
 export default app;

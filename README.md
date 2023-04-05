@@ -33,6 +33,8 @@ $ cd ChatGeePeeTee
     
     # Database Settings
     DATABASE_URL="mysql://<url-encoded USERNAME>:<url-encoded PASSWORD>@<HOSTNAME>:<PORT>/<DATABASE>"
+
+    TOKEN_SECRET="some-super-secret-string"
     ```
 - Install MySQL server and MySQL Workbench
 - Create a Database as per the URI set in `.env`

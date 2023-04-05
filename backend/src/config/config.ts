@@ -19,3 +19,5 @@ export const COOKIE_CONFIG = {
     httpOnly: true,
     secure: __prod__,
 };
+
+export const TOKEN_SECRET = process.env.TOKEN_SECRET as string;
