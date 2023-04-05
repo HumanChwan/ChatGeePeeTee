@@ -1,4 +1,5 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import axios from "axios";
 
 export type User = {
     id: string;
@@ -26,6 +27,26 @@ export const useAuth = () => {
 const AuthProvider = (props: any) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+
+    const defaultLogin = async () => {
+        setLoading(true);
+        try {
+            const { data } = await axios.get(`${process.env.REACT_APP_SERVER_URL}/get-user`, {
+                withCredentials: true,
+            });
+            if (!data || !data.success) setUser(null);
+            else setUser(data.user);
+        } catch (err) {
+            console.error(`[#] Cannot reach server at this moment!`);
+            setUser(null);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        defaultLogin();
+    }, []);
 
     const value = {
         user,
