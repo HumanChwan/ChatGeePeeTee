@@ -6,6 +6,7 @@
   "repository": "https://github.com/HumanChwan/ChatGeePeeTee",
   "author": "Chukkala Dinesh & N V Vineeth",
   "license": "",
+  "type": "module",
   "dependencies": {
     "bcrypt": "^5.1.0",
     "cookie-parser": "^1.4.6",
