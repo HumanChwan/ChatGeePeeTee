@@ -19,7 +19,7 @@
     "start": "node --es-module-specifier-resolution=node build/index.js",
     "dev": "concurrently \"yarn run tsc --watch\" \"nodemon -q --es-module-specifier-resolution=node build/index.js\"",
     "fmt-check": "yarn run prettier --check .",
-    "fmt": "yarn run prettier --write .",
+    "fmt": "yarn run prettier --write ."
   },
   "devDependencies": {
     "@types/bcrypt": "^5.0.0",
