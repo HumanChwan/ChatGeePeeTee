@@ -18,7 +18,9 @@ html,
 }
 
 :root {
-    --grey-scale-0: white;
+    --dark-elevation: rgb(120, 120, 120);
+    --grey-scale-0: rgb(250, 252, 254);
+    --grey-scale-1: rgb(240, 245, 248);
     --grey-scale-2: rgb(192, 194, 196);
     --grey-scale-5: rgb(128, 130, 132);
     --grey-scale-7: rgb(64, 66, 68);
@@ -28,13 +30,15 @@ html,
 }
 
 body.dark {
+    --dark-elevation: rgb(15, 15, 15);
     --grey-scale-0: #010409;
-    --grey-scale-2: rgb(64, 66, 68);
-    --grey-scale-5: rgb(128, 130, 132);
-    --grey-scale-7: rgb(192, 194, 196);
-    --grey-scale-10: white;
+    --grey-scale-1: rgb(14, 10, 17);
+    --grey-scale-2: rgb(23, 27, 33);
+    --grey-scale-5: rgb(103, 102, 101);
+    --grey-scale-7: rgb(128, 130, 132);
+    --grey-scale-10: rgb(150, 150, 150);
 
-    --background: var(--grey-scale-0);
+    --background: var(--grey-scale-2);
 }
 
 body {
@@ -50,6 +54,10 @@ body.loading {
     width: 100%;
 }
 
+a {
+    color: $primary;
+}
+
 .primary-input {
     padding: 0.75rem 1rem;
     border: 1px solid var(--grey-scale-2);
@@ -58,10 +66,13 @@ body.loading {
     font-size: 1rem;
 
     border-radius: 0.75rem;
+
+    background-color: var(--grey-scale-1);
+    color: var(--grey-scale-10);
 }
 
 .primary-input:focus {
-    border: 1px solid var(--grey-scale-10);
+    border: 1px solid var(--grey-scale-5);
 }
 
 .btn {
@@ -72,12 +83,12 @@ body.loading {
     font-weight: 600;
     font-size: 1rem;
 
-    border: 1px solid var(--grey-scale-10);
+    border: none;
     border-radius: 0.5rem;
 
-    background: $primaryBlue;
+    background: $primary;
 }
 
 .btn:hover {
-    background: lighten($primaryBlue, 5%);
+    background: lighten($primary, 5%);
 }

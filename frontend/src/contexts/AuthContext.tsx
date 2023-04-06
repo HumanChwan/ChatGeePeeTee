@@ -8,7 +8,6 @@ export type User = {
     name: string;
     createdAt: Date;
     picture: string | undefined;
-    online: boolean;
 };
 
 interface IContext {
@@ -18,6 +17,8 @@ interface IContext {
     setLoading: (flag: boolean) => void;
     pointerLoading: boolean;
     setPointerLoading: (flag: boolean) => void;
+    theme: boolean;
+    setTheme: (flag: boolean | ((f: boolean) => boolean)) => void;
 }
 
 const AuthContext = createContext<IContext | null>(null);
@@ -29,13 +30,14 @@ export const useAuth = () => {
 const AuthProvider = (props: any) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [theme, setTheme] = useState<boolean>(false);
     const [pointerLoading, setPointerLoading] = useState<boolean>(false);
 
     const defaultLogin = async () => {
         setLoading(true);
         setPointerLoading(true);
         try {
-            const { data } = await axios.get(`${process.env.REACT_APP_SERVER_URL}/get-user`, {
+            const { data } = await axios.get(`${process.env.REACT_APP_SERVER_URL}/auth/get-user`, {
                 withCredentials: true,
             });
             if (!data || !data.success) setUser(null);
@@ -68,6 +70,8 @@ const AuthProvider = (props: any) => {
         setLoading,
         pointerLoading,
         setPointerLoading,
+        theme,
+        setTheme,
     };
 
     return <AuthContext.Provider value={value}>{props.children}</AuthContext.Provider>;

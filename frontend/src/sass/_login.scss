@@ -13,8 +13,10 @@
 
         padding: 2rem;
 
-        border: 1px solid var(--grey-scale-10);
+        // border: 1px solid var(--grey-scale-10);
         border-radius: 0.5rem;
+
+        box-shadow: 0 5px 10px 2px var(--dark-elevation);
 
         &__input {
             display: flex;
@@ -29,14 +31,6 @@
 
             & > input:focus ~ label {
                 color: var(--grey-scale-10);
-            }
-
-            & > label.error {
-                color: var(--error-red-light);
-            }
-
-            & > input:focus ~ lable.error {
-                color: var(--error-red);
             }
 
             position: relative;

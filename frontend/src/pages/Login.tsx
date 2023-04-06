@@ -6,35 +6,42 @@ import axios from "axios";
 import { FormEvent, useState } from "react";
 import { pushErrorNotification, pushSuccessNotification } from "../components/Notifications";
 import { useAuth } from "../contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, redirect } from "react-router-dom";
 
 const Login = () => {
     const [username, setUsername] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [showPassword, setShowPassword] = useState<boolean>(false);
 
-    const { setPointerLoading: setLoading, pointerLoading: loading } = useAuth()!;
+    const { theme } = useAuth()!;
+
+    const { setPointerLoading: setLoading, pointerLoading: loading, setUser } = useAuth()!;
 
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
 
         setLoading(true);
         try {
-            const { data } = await axios.post(`${process.env.REACT_APP_SERVER_URL}/login`, {
-                data: {
+            const { data } = await axios.post(
+                `${process.env.REACT_APP_SERVER_URL}/auth/login`,
+                {
                     username,
                     password,
                 },
-            });
+                { withCredentials: true }
+            );
 
             if (!data || !data.success) {
                 pushErrorNotification({
                     title: "Login failed!",
                     message: "Incorrect Credentials!",
                 });
+                return;
             }
 
             pushSuccessNotification({ title: "Login Successful!", message: "" });
+            setUser(data.user);
+            redirect("/");
         } catch (err) {
             console.error(`[#] Could not reach server!`);
             pushErrorNotification({
@@ -69,6 +76,7 @@ const Login = () => {
                         onClick={() => {
                             setShowPassword((s) => !s);
                         }}
+                        style={theme ? { color: "#cdd5e5" } : {}}
                     />
                     <input
                         id="login_password"

@@ -4,7 +4,8 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 const Loading = () => {
     return (
         <main className="container loading-page">
-            <FontAwesomeIcon icon={faCircleNotch} />
+            <FontAwesomeIcon size="xl" icon={faCircleNotch} />
+            <h2>Loading...</h2>
         </main>
     );
 };

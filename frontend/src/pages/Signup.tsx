@@ -6,7 +6,7 @@ import axios from "axios";
 import { FormEvent, useState } from "react";
 import { pushErrorNotification, pushSuccessNotification } from "../components/Notifications";
 import { useAuth } from "../contexts/AuthContext";
-import { Link } from "react-router-dom";
+import { Link, redirect } from "react-router-dom";
 
 const Signup = () => {
     const [username, setUsername] = useState<string>("");
@@ -16,6 +16,8 @@ const Signup = () => {
     const [showPassword, setShowPassword] = useState<boolean>(false);
     const [validUsername, setValidUsername] = useState<boolean>(false);
 
+    const { theme } = useAuth()!;
+
     const { setPointerLoading: setLoading, pointerLoading: loading } = useAuth()!;
 
     const handleSubmit = async (e: FormEvent) => {
@@ -23,22 +25,24 @@ const Signup = () => {
 
         setLoading(true);
         try {
-            const { data } = await axios.post(`${process.env.REACT_APP_SERVER_URL}/signup`, {
-                data: {
-                    username,
-                    password,
-                    name,
-                    email,
-                },
+            const { data } = await axios.post(`${process.env.REACT_APP_SERVER_URL}/auth/signup`, {
+                username,
+                password,
+                name,
+                email,
             });
 
             if (!data || !data.success) {
                 pushErrorNotification({
                     title: "Signup failed!",
-                    message: "Username has been already used",
+                    message: "Username/email has been already used.",
                 });
             } else {
-                pushSuccessNotification({ title: "Login Successful!", message: "" });
+                pushSuccessNotification({
+                    title: "Login Successful!",
+                    message: "Please Login once!",
+                });
+                redirect("/login");
             }
         } catch (err) {
             console.error(`[#] Could not reach server!`);
@@ -51,12 +55,12 @@ const Signup = () => {
         }
     };
 
-    const checkUsername = async () => {
+    const checkUsername = async (possibleUsername: string) => {
         try {
             const { data } = await axios.post(
-                `${process.env.REACT_URL_SERVER_URL}/check-username`,
+                `${process.env.REACT_APP_SERVER_URL}/auth/check-username`,
                 {
-                    data: { username },
+                    username: possibleUsername,
                 }
             );
 
@@ -90,6 +94,7 @@ const Signup = () => {
                             setName(e.target.value);
                         }}
                         className="primary-input"
+                        autoComplete="off"
                     />
                     <label htmlFor="signup_name">Name</label>
                 </div>
@@ -102,9 +107,10 @@ const Signup = () => {
                         required
                         onChange={(e) => {
                             setUsername(e.target.value);
-                            checkUsername();
+                            checkUsername(e.target.value);
                         }}
                         className="primary-input"
+                        autoComplete="off"
                     />
                     {username && (
                         <FontAwesomeIcon
@@ -141,6 +147,7 @@ const Signup = () => {
                         onClick={() => {
                             setShowPassword((s) => !s);
                         }}
+                        style={theme ? { color: "#cdd5e5" } : {}}
                     />
                     <input
                         id="signup_password"
