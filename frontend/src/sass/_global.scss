@@ -1,7 +1,83 @@
+@use "./colors" as *;
+@import url("https://fonts.googleapis.com/css2?family=Dosis:wght@200;300;400;500;600;700;800&display=swap");
+
 *,
 *:after,
 *:before {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+
+    font-family: Dosis, sans-serif;
+}
+
+body,
+html,
+#root {
+    height: 100%;
+}
+
+:root {
+    --grey-scale-0: white;
+    --grey-scale-2: rgb(192, 194, 196);
+    --grey-scale-5: rgb(128, 130, 132);
+    --grey-scale-7: rgb(64, 66, 68);
+    --grey-scale-10: #010409;
+
+    --background: var(--grey-scale-0);
+}
+
+body.dark {
+    --grey-scale-0: #010409;
+    --grey-scale-2: rgb(64, 66, 68);
+    --grey-scale-5: rgb(128, 130, 132);
+    --grey-scale-7: rgb(192, 194, 196);
+    --grey-scale-10: white;
+
+    --background: var(--grey-scale-0);
+}
+
+body {
+    background: var(--background);
+}
+
+body.loading {
+    cursor: wait;
+}
+
+.container {
+    height: 100%;
+    width: 100%;
+}
+
+.primary-input {
+    padding: 0.75rem 1rem;
+    border: 1px solid var(--grey-scale-2);
+    outline: none;
+
+    font-size: 1rem;
+
+    border-radius: 0.75rem;
+}
+
+.primary-input:focus {
+    border: 1px solid var(--grey-scale-10);
+}
+
+.btn {
+    outline: none;
+    padding: 0.75rem 0rem;
+    cursor: pointer;
+
+    font-weight: 600;
+    font-size: 1rem;
+
+    border: 1px solid var(--grey-scale-10);
+    border-radius: 0.5rem;
+
+    background: $primaryBlue;
+}
+
+.btn:hover {
+    background: lighten($primaryBlue, 5%);
 }

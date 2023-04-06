@@ -5,10 +5,14 @@ import PrivateRoute from "./routes/PrivateRoute";
 import PublicRoute from "./routes/PublicRoute";
 import Login from "./pages/Login";
 import Signup from "./pages/Signup";
+import Navbar from "./components/Navbar";
+import { Notifications } from "react-push-notification";
 
 const App = () => {
     return (
         <AuthProvider>
+            <Notifications />
+            <Navbar />
             <Router>
                 <Routes>
                     <Route path="/" element={<PrivateRoute />}>

@@ -7,7 +7,7 @@ export type User = {
     email: string;
     name: string;
     createdAt: Date;
-    picture: string;
+    picture: string | undefined;
     online: boolean;
 };
 
@@ -16,6 +16,8 @@ interface IContext {
     setUser: (user: User) => void;
     loading: boolean;
     setLoading: (flag: boolean) => void;
+    pointerLoading: boolean;
+    setPointerLoading: (flag: boolean) => void;
 }
 
 const AuthContext = createContext<IContext | null>(null);
@@ -27,9 +29,11 @@ export const useAuth = () => {
 const AuthProvider = (props: any) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState<boolean>(false);
+    const [pointerLoading, setPointerLoading] = useState<boolean>(false);
 
     const defaultLogin = async () => {
         setLoading(true);
+        setPointerLoading(true);
         try {
             const { data } = await axios.get(`${process.env.REACT_APP_SERVER_URL}/get-user`, {
                 withCredentials: true,
@@ -41,8 +45,17 @@ const AuthProvider = (props: any) => {
             setUser(null);
         } finally {
             setLoading(false);
+            setPointerLoading(false);
         }
     };
+
+    useEffect(() => {
+        if (!pointerLoading) {
+            document.body.classList.remove("loading");
+        } else {
+            document.body.classList.add("loading");
+        }
+    }, [pointerLoading]);
 
     useEffect(() => {
         defaultLogin();
@@ -53,6 +66,8 @@ const AuthProvider = (props: any) => {
         setUser,
         loading,
         setLoading,
+        pointerLoading,
+        setPointerLoading,
     };
 
     return <AuthContext.Provider value={value}>{props.children}</AuthContext.Provider>;
