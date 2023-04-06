@@ -3,7 +3,9 @@ import cookieParser from "cookie-parser";
 import cors from "cors";
 
 import { CLIENT_URL } from "./config/config";
-import { login, logout, signup } from "./controllers/authentication";
+
+import authenticationRouter from "./routers/authentications"
+import chatRouter from "./routers/chat"
 
 const app: Express = express();
 
@@ -19,8 +21,7 @@ app.use(
     })
 );
 
-app.get('/signup', signup)
-app.get('/login', login)
-app.get('/logout', logout)
+app.use("/auth", authenticationRouter)
+app.use("/chat", chatRouter)
 
 export default app;
