@@ -19,18 +19,19 @@ model User {
   password   String   @db.VarChar(100)
   picture    String?  @db.VarChar(100)
   online     Boolean
+  dark       Boolean
   lastOnline DateTime @map("last_online")
 
   participation Member[]
 }
 
 model Chat {
-  id        String   @id @db.VarChar(100)
-  dm        Boolean
-  name      String?  @db.VarChar(100)
-  picture   String?  @db.VarChar(100)
-  createdAt DateTime @default(now()) @map("created_at")
-
+  id           String   @id @db.VarChar(100)
+  dm           Boolean
+  name         String?  @db.VarChar(100)
+  picture      String?  @db.VarChar(100)
+  createdAt    DateTime @default(now()) @map("created_at")
+  lastMessage  DateTime
   participants Member[]
 }
 
