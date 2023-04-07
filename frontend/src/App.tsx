@@ -7,6 +7,7 @@ import Login from "./pages/Login";
 import Signup from "./pages/Signup";
 import Navbar from "./components/Navbar";
 import { Notifications } from "react-push-notification";
+import Profile from "./pages/Profile";
 
 const App = () => {
     return (
@@ -17,6 +18,7 @@ const App = () => {
                 <Routes>
                     <Route path="/" element={<PrivateRoute />}>
                         <Route path="" element={<Dashboard />} />
+                        <Route path="/profile" element={<Profile />} />
                     </Route>
                     <Route path="/login" element={<PublicRoute />}>
                         <Route path="" element={<Login />} />

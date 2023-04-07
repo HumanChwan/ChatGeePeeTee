@@ -29,8 +29,8 @@ export const useAuth = () => {
 
 const AuthProvider = (props: any) => {
     const [user, setUser] = useState<User | null>(null);
-    const [loading, setLoading] = useState<boolean>(false);
-    const [theme, setTheme] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [theme, setTheme] = useState<boolean>(true);
     const [pointerLoading, setPointerLoading] = useState<boolean>(false);
 
     const defaultLogin = async () => {
