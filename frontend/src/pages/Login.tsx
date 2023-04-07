@@ -6,14 +6,16 @@ import axios from "axios";
 import { FormEvent, useState } from "react";
 import { pushErrorNotification, pushSuccessNotification } from "../components/Notifications";
 import { useAuth } from "../contexts/AuthContext";
-import { Link, redirect } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
     const [username, setUsername] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [showPassword, setShowPassword] = useState<boolean>(false);
 
-    const { theme } = useAuth()!;
+    const { theme, setTheme } = useAuth()!;
+
+    const navigate = useNavigate();
 
     const { setPointerLoading: setLoading, pointerLoading: loading, setUser } = useAuth()!;
 
@@ -40,8 +42,11 @@ const Login = () => {
             }
 
             pushSuccessNotification({ title: "Login Successful!", message: "" });
+
             setUser(data.user);
-            redirect("/");
+            setTheme(data.user.dark);
+
+            navigate("/");
         } catch (err) {
             console.error(`[#] Could not reach server!`);
             pushErrorNotification({

@@ -1,11 +1,13 @@
 import React from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 
 import defaultImage from "../assets/user.png";
 import { useState } from "react";
 import axios from "axios";
 import { pushErrorNotification, pushSuccessNotification } from "../components/Notifications";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 const Profile = () => {
     const { user, setUser } = useAuth()!;
@@ -109,9 +111,12 @@ const Profile = () => {
 
     return (
         <main className="container profile">
+            <Link to="/" className="btn back-btn">
+                <FontAwesomeIcon icon={faArrowLeft} /> Back
+            </Link>
             <div className="profile__photo">
                 <form className="profile__photo_form">
-                    <img src={picture} alt="profile" />
+                    <div style={{ backgroundImage: `url(${picture})` }} className="img" />
                     <label className="btn">
                         Update Photo
                         <input
@@ -124,6 +129,7 @@ const Profile = () => {
                 </form>
             </div>
             <form className="profile__details" onSubmit={handleProfileUpdate}>
+                <h1>Profile</h1>
                 <div className="profile__details__fields">
                     <div className="profile__details__field">
                         <input

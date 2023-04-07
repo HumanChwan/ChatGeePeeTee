@@ -12,7 +12,7 @@ export type User = {
 
 interface IContext {
     user: User | null;
-    setUser: (user: User) => void;
+    setUser: (user: User | null) => void;
     loading: boolean;
     setLoading: (flag: boolean) => void;
     pointerLoading: boolean;

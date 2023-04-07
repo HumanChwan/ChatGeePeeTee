@@ -6,7 +6,7 @@ import axios from "axios";
 import { FormEvent, useState } from "react";
 import { pushErrorNotification, pushSuccessNotification } from "../components/Notifications";
 import { useAuth } from "../contexts/AuthContext";
-import { Link, redirect } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Signup = () => {
     const [username, setUsername] = useState<string>("");
@@ -17,6 +17,8 @@ const Signup = () => {
     const [validUsername, setValidUsername] = useState<boolean>(false);
 
     const { theme } = useAuth()!;
+
+    const navigate = useNavigate();
 
     const { setPointerLoading: setLoading, pointerLoading: loading } = useAuth()!;
 
@@ -30,6 +32,7 @@ const Signup = () => {
                 password,
                 name,
                 email,
+                theme,
             });
 
             if (!data || !data.success) {
@@ -37,13 +40,13 @@ const Signup = () => {
                     title: "Signup failed!",
                     message: "Username/email has been already used.",
                 });
-            } else {
-                pushSuccessNotification({
-                    title: "Login Successful!",
-                    message: "Please Login once!",
-                });
-                redirect("/login");
             }
+            pushSuccessNotification({
+                title: "Login Successful!",
+                message: "Please Login once!",
+            });
+
+            navigate("/login");
         } catch (err) {
             console.error(`[#] Could not reach server!`);
             pushErrorNotification({

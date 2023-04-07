@@ -17,25 +17,39 @@ html,
     height: 100%;
 }
 
+#portal {
+    height: 100%;
+    z-index: 1001;
+}
+
 :root {
     --dark-elevation: rgb(120, 120, 120);
     --grey-scale-0: rgb(250, 252, 254);
-    --grey-scale-1: rgb(240, 245, 248);
+    --grey-scale-1: rgb(200, 204, 208);
+    --grey-scale-1-5: rgb(240, 242, 245);
+    --grey-scale-1-75: rgb(225, 227, 229);
     --grey-scale-2: rgb(192, 194, 196);
+    --grey-scale-3: rgb(180, 182, 184);
     --grey-scale-5: rgb(128, 130, 132);
     --grey-scale-7: rgb(64, 66, 68);
+    --grey-scale-8: rgb(32, 35, 38);
     --grey-scale-10: #010409;
 
-    --background: var(--grey-scale-0);
+    --background: var(--grey-scale-2);
 }
 
 body.dark {
     --dark-elevation: rgb(15, 15, 15);
     --grey-scale-0: #010409;
     --grey-scale-1: rgb(14, 10, 17);
+    --grey-scale-1-25: rgb(32, 34, 35);
+    --grey-scale-1-5: rgb(20, 24, 27);
     --grey-scale-2: rgb(23, 27, 33);
+    --grey-scale-3: rgb(20, 23, 30);
+    --grey-scale-4: rgb(22, 25, 29);
     --grey-scale-5: rgb(103, 102, 101);
     --grey-scale-7: rgb(128, 130, 132);
+    --grey-scale-8: rgb(140, 143, 145);
     --grey-scale-10: rgb(150, 150, 150);
 
     --background: var(--grey-scale-2);
@@ -43,6 +57,8 @@ body.dark {
 
 body {
     background: var(--background);
+
+    overflow: hidden;
 }
 
 body.loading {

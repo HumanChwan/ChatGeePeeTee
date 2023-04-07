@@ -1,0 +1,32 @@
+.background {
+    position: absolute;
+    background-color: rgba(0, 0, 0, 0.5);
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    .modal {
+        position: relative;
+        background-color: var(--grey-scale-3);
+
+        & > svg {
+            position: absolute;
+            top: 0.75em;
+            right: 1em;
+            width: 32px;
+            height: 32px;
+            opacity: 0.3;
+
+            cursor: pointer;
+
+            &:hover {
+                opacity: 1;
+            }
+        }
+    }
+}
