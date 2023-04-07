@@ -70,6 +70,43 @@ const Profile = () => {
         }
     };
 
+    const handleProfileUpdate = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        try {
+            const { data } = await axios.post(
+                `${process.env.REACT_APP_SERVER_URL}/auth/update-profile`,
+                {
+                    username,
+                    email,
+                    name,
+                },
+                {
+                    withCredentials: true,
+                }
+            );
+
+            if (!data || !data.success) {
+                pushErrorNotification({
+                    title: "Error",
+                    message: "Could not update profile :(",
+                });
+                return;
+            }
+
+            setUser({ ...data.user });
+            pushSuccessNotification({
+                title: "Updated Profile!",
+                message: "Profile has been updated.",
+            });
+        } catch (err) {
+            console.error(err);
+            pushErrorNotification({
+                title: "Error",
+                message: "Could not update profile :(",
+            });
+        }
+    };
+
     return (
         <main className="container profile">
             <div className="profile__photo">
@@ -86,7 +123,7 @@ const Profile = () => {
                     </label>
                 </form>
             </div>
-            <form className="profile__details">
+            <form className="profile__details" onSubmit={handleProfileUpdate}>
                 <div className="profile__details__fields">
                     <div className="profile__details__field">
                         <input

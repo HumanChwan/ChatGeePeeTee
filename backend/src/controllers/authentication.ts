@@ -170,3 +170,39 @@ export const updateProfilePicture = async (_req: Request, res: Response) => {
         }
     });
 };
+
+export const updateProfile = async (_req: Request, res: Response) => {
+    const req = _req as AuthenticatedUserRequest;
+    try {
+        const user = await prisma.user.findUnique({ where: { id: req.userId } });
+        if (!user) {
+            return res.status(403).json({ success: false, message: "Invalid id used for cookie" });
+        }
+
+        if (!req.body) {
+            return res.status(400).json({ success: false, message: "Malformed body" });
+        }
+
+        const { username, email, name } = req.body;
+        const updatedUser = await prisma.user.update({
+            where: { id: req.userId },
+            data: {
+                username: username || user.username,
+                email: email || user.email,
+                name: name || user.name
+            }
+        })
+
+        return res.status(200).json({
+            success: true, user: serializeUser(updatedUser), message: "Updated User successfully!"
+        })
+    } catch (err) {
+        console.error(`[#] ${err}`)
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error"
+        })
+    }
+
+
+};
