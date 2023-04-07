@@ -26,13 +26,15 @@ model User {
 }
 
 model Chat {
-  id           String   @id @db.VarChar(100)
-  dm           Boolean
-  name         String?  @db.VarChar(100)
-  picture      String?  @db.VarChar(100)
-  createdAt    DateTime @default(now()) @map("created_at")
-  lastMessage  DateTime
+  id          String   @id @db.VarChar(100)
+  dm          Boolean
+  name        String?  @db.VarChar(100)
+  picture     String?  @db.VarChar(100)
+  createdAt   DateTime @default(now()) @map("created_at")
+  lastMessage DateTime
+
   participants Member[]
+  messages     Message[]
 }
 
 model Member {
@@ -53,8 +55,10 @@ model Message {
   id        String   @id @db.VarChar(100)
   createdAt DateTime @default(now()) @map("created_at")
   mid       String   @db.VarChar(100)
+  cid       String   @db.VarChar(100)
   content   String?  @db.VarChar(100)
   filePath  String?  @db.VarChar(100)
 
   sender Member @relation(fields: [mid], references: [id])
+  chat   Chat   @relation(fields: [cid], references: [id])
 }
