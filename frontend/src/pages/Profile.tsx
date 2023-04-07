@@ -36,10 +36,13 @@ const Profile = () => {
 
         try {
             const { data } = await axios.post(
-                `${process.env.REACT_APP_SERVER_URL}/update-profile-picture`,
+                `${process.env.REACT_APP_SERVER_URL}/auth/update-profile-picture`,
                 formData,
                 {
                     withCredentials: true,
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
                 }
             );
             if (!data || !data.success) {
