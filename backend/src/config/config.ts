@@ -13,6 +13,7 @@ export const __prod__ = ENVIRONMENT === "production";
 
 export const PORT = Number(process.env.PORT) || 5000;
 export const CLIENT_URL = process.env.CLIENT_URL as string;
+export const SERVER_URL = process.env.SERVER_URL as string;
 
 // TODO: secure being true is hard to implement perhaps
 export const COOKIE_CONFIG = {

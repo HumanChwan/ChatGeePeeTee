@@ -4,8 +4,10 @@ import cors from "cors";
 
 import { CLIENT_URL } from "./config/config";
 
-import authenticationRouter from "./routers/authentications"
-import chatRouter from "./routers/chat"
+import authenticationRouter from "./routers/authentication";
+import chatRouter from "./routers/chat";
+
+import path from "path";
 
 const app: Express = express();
 
@@ -21,7 +23,9 @@ app.use(
     })
 );
 
-app.use("/auth", authenticationRouter)
-app.use("/chat", chatRouter)
+app.use(express.static(path.join("public")));
+
+app.use("/auth", authenticationRouter);
+app.use("/chat", chatRouter);
 
 export default app;

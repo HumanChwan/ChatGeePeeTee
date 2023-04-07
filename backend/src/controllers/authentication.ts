@@ -2,10 +2,13 @@ import { Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
-import { AuthenticatedUserRequest } from "../types";
+
 import { prisma } from "../prisma";
 import { serializeUser } from "../utils";
-import { COOKIE_CONFIG, TOKEN_SECRET } from "../config/config";
+import { profilePictureUpload } from "../multer";
+
+import { AuthenticatedUserRequest } from "../types";
+import { COOKIE_CONFIG, SERVER_URL, TOKEN_SECRET } from "../config/config";
 
 export const signup = async (req: Request, res: Response) => {
     const { body } = req;
@@ -15,8 +18,8 @@ export const signup = async (req: Request, res: Response) => {
     }
 
     const { name, email, password, username } = body;
-    
-    if (!name || !email || !password || !username)  
+
+    if (!name || !email || !password || !username)
         return res.status(400).json({ success: false, message: "Malformed body" });
 
     try {
@@ -33,13 +36,17 @@ export const signup = async (req: Request, res: Response) => {
                 email,
                 username,
                 online: false,
-                lastOnline: new Date()
-            }
-        })
+                lastOnline: new Date(),
+            },
+        });
 
-        return res.status(200).json({ success: true, message: "Created new user", user: serializeUser(user) })
+        return res
+            .status(200)
+            .json({ success: true, message: "Created new user", user: serializeUser(user) });
     } catch (err) {
-        return res.status(403).json({ success: false, message: "Couldn't insert into the database" });
+        return res
+            .status(403)
+            .json({ success: false, message: "Couldn't insert into the database" });
     }
 };
 
@@ -77,11 +84,14 @@ export const login = async (req: Request, res: Response) => {
             expiresIn: "10d",
         });
 
-        return res.cookie("jwt", token, COOKIE_CONFIG).status(200).json({
-            success: true,
-            message: "Logged in successfully!",
-            user: serializeUser(user)
-        })
+        return res
+            .cookie("jwt", token, COOKIE_CONFIG)
+            .status(200)
+            .json({
+                success: true,
+                message: "Logged in successfully!",
+                user: serializeUser(user),
+            });
     } catch (err) {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
@@ -128,7 +138,35 @@ export const checkUsername = async (req: Request, res: Response) => {
 
         return res.status(200).json({ success: !user });
     } catch (err) {
-        console.error(`[#] Error: ${err}`)
+        console.error(`[#] Error: ${err}`);
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
+};
+
+export const updateProfilePicture = async (_req: Request, res: Response) => {
+    profilePictureUpload.single("profile_photo")(_req, res, async (err) => {
+        const req = _req as AuthenticatedUserRequest;
+        if (err || !req.file) {
+            console.error(`[#] ${err}`);
+            return res.status(403).json({ success: false, message: "Forbidden" });
+        }
+
+        try {
+            await prisma.user.update({
+                where: { id: req.userId },
+                data: {
+                    picture: `${SERVER_URL}/images/profile/${req.file.filename}`,
+                },
+            });
+
+            return res.status(200).json({
+                success: true,
+                message: "Updated successfully!",
+                image: `${SERVER_URL}/images/profile/${req.file.filename}`,
+            });
+        } catch (err) {
+            console.error(`[#] ${err}`);
+            return res.status(500).json({ success: false, message: "Internal Server Error" });
+        }
+    });
 };

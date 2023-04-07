@@ -5,7 +5,6 @@ import { AuthenticatedUserRequest } from "../types";
 
 export const authorization = (req: Request, res: Response, next: NextFunction) => {
     if (!req.cookies) return res.status(403).json({ success: false, message: "Forbidden" });
-    console.log(req.cookies)
 
     const token = req.cookies.jwt;
 
@@ -13,7 +12,6 @@ export const authorization = (req: Request, res: Response, next: NextFunction) =
 
     try {
         const data = jwt.verify(token, TOKEN_SECRET);
-        console.log(data)
         if (typeof data === "string" || data instanceof String) {
             return res.status(403).json({ success: false, message: "Forbidden" });
         }
@@ -22,7 +20,7 @@ export const authorization = (req: Request, res: Response, next: NextFunction) =
 
         next();
     } catch (err) {
-        console.log(err)
+        console.log(err);
         return res.status(403).json({ success: false, message: "Forbidden" });
     }
 };
