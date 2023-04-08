@@ -77,6 +77,10 @@
                 &__text {
                     flex: 1 0 60%;
 
+                    & h3 {
+                        font-weight: 500;
+                    }
+
                     color: var(--grey-scale-7);
                 }
 
@@ -86,6 +90,10 @@
 
                 &:hover {
                     background-color: var(--hover);
+                }
+
+                &.active {
+                    background-color: var(--active);
                 }
             }
         }

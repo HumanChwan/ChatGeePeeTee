@@ -41,7 +41,10 @@ const AuthProvider = (props: any) => {
                 withCredentials: true,
             });
             if (!data || !data.success) setUser(null);
-            else setUser(data.user);
+            else {
+                setUser(data.user);
+                setTheme(data.user.dark);
+            }
         } catch (err) {
             console.error(`[#] Cannot reach server at this moment!`);
             setUser(null);

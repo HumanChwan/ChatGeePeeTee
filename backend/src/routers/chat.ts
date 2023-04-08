@@ -5,24 +5,32 @@ import {
     createDM,
     createGroup,
     getChats,
+    leaveGroup,
     removeGroupMember,
     toggleAdminStatus,
-    updateGroupName,
+    updateGroup,
     updateGroupPhoto,
 } from "../controllers/chat";
 
 const router = Router();
 
-router.get("/get-chats", authorization, getChats);
-router.post("/create-dm", authorization, createDM);
-router.post("/create-group", authorization, createGroup);
+// Normal Member routes
+router.use(authorization);
 
-router.post("/add-group-member", authorization, groupAdminAuthorization, addGroupMember);
+router.get("/get-chats", getChats);
+router.post("/create-dm", createDM);
+router.post("/create-group", createGroup);
+router.get("/leave-group", leaveGroup);
 
-router.post("/update-group-name", authorization, groupAdminAuthorization, updateGroupName);
-router.post("/update-group-picture", authorization, groupAdminAuthorization, updateGroupPhoto);
+// Group Admin routes
+router.use(groupAdminAuthorization);
 
-router.post("/remove-member", authorization, groupAdminAuthorization, removeGroupMember);
-router.post("/toggle-admin-status", authorization, groupAdminAuthorization, toggleAdminStatus);
+router.post("/add-group-member", addGroupMember);
+
+router.post("/update-group", updateGroup);
+router.post("/update-group-picture", updateGroupPhoto);
+
+router.post("/remove-member", removeGroupMember);
+router.post("/toggle-admin-status", toggleAdminStatus);
 
 export default router;

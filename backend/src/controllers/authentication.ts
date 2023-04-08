@@ -207,3 +207,51 @@ export const updateProfile = async (_req: Request, res: Response) => {
         });
     }
 };
+
+export const updateTheme = async (_req: Request, res: Response) => {
+    const req = _req as AuthenticatedUserRequest;
+
+    if (!req.body || req.body.theme === undefined) 
+        return res.status(400).json({ success: false, message: "Malformed body" });
+
+    try {
+        await prisma.user.update({
+            where: { id: req.userId },
+            data: { dark: req.body.theme }
+        }) 
+
+        return res.status(200).json({ success: true, message: "Updated Theme" })
+    } catch (err) {
+        console.error(`[#] ${err}`);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
+    }
+}
+
+export const removeProfilePicture = async (_req: Request, res: Response) => {
+    const req = _req as AuthenticatedUserRequest;
+    try {
+        const user = await prisma.user.update({
+            where: { id: req.userId },
+            data: { picture: null },
+        });
+
+        if (!user) {
+            return res.status(403).json({ success: false, message: "Invalid id used for cookie" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            user: serializeUser(user),
+            message: "Updated User successfully!",
+        });
+    } catch (err) {
+        console.error(`[#] ${err}`);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
+    }
+};

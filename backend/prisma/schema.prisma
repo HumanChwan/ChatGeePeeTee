@@ -38,10 +38,11 @@ model Chat {
 }
 
 model Member {
-  id    String  @id @db.VarChar(100)
-  uid   String  @db.VarChar(100)
-  cid   String  @db.VarChar(100)
-  admin Boolean
+  id      String  @id @db.VarChar(100)
+  uid     String  @db.VarChar(100)
+  cid     String  @db.VarChar(100)
+  admin   Boolean
+  removed Boolean
 
   messages Message[]
 

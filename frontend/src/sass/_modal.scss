@@ -59,8 +59,6 @@
         & > div {
             flex-grow: 1;
         }
-
-        margin-bottom: 1rem;
     }
 
     & .right-btn {
@@ -89,6 +87,33 @@
 
             right: 1rem;
             top: 50%;
+        }
+    }
+
+    &-member {
+        &-list {
+            display: flex;
+            justify-content: flex-start;
+            align-items: center;
+
+            flex-wrap: wrap;
+
+            color: var(--grey-scale-7);
+            gap: 0.5rem;
+        }
+
+        border: 1px solid var(--grey-scale-7);
+        padding: 0.25rem 0.5rem;
+        border-radius: 0.5rem;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        gap: 0.5rem;
+
+        & > svg:hover {
+            cursor: pointer;
         }
     }
 }

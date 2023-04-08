@@ -6,34 +6,43 @@ import { faCircle, faFile } from "@fortawesome/free-solid-svg-icons";
 import NewChatOptions from "../components/NewChatOptions";
 import { useAuth } from "../contexts/AuthContext";
 
-import defaultPicture from "../assets/user.png";
+import useDefaultImage from "../hooks/useDefaultImage";
 import { Navigate, useNavigate } from "react-router-dom";
 import Options from "../components/Options";
 import LogoutPrompt from "../components/LogoutPrompt";
+
+interface Member {
+    userId: string;
+    username: string;
+    picture: string | null;
+    admin: boolean;
+}
 
 interface Message {
     id: string;
     userId: string;
     senderName: string;
     senderPicture: string | null;
-
+    removed: boolean;
     content: string | null;
     fileLink: string | null;
     fileName: string | undefined;
 }
 
 export interface Conversation {
-    id: string; // Chat ID
-    dm: boolean;
-    name: string;
-    picture: string;
     messages: Message[];
-    unread: boolean;
+    members: Member[];
+    id: string;
+    dm: boolean;
+    name: string | null;
+    picture: string | null;
+    lastMessage: Date;
 }
 
 const SETTINGS = ["Profile", "Logout"];
 const Dashboard = () => {
-    const { user, setUser } = useAuth()!;
+    const defaultImage = useDefaultImage();
+    const { user } = useAuth()!;
     const navigate = useNavigate();
 
     const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -100,7 +109,9 @@ const Dashboard = () => {
                         return (
                             <div
                                 key={conversation.id}
-                                className="conversation"
+                                className={`conversation ${
+                                    selectedConversationIdx === idx ? "active" : ""
+                                }`}
                                 onClick={() => {
                                     setSelectedConversationIdx(idx);
                                 }}
@@ -109,7 +120,7 @@ const Dashboard = () => {
                                     className="conversation__image"
                                     style={{
                                         backgroundImage: `url(${
-                                            conversation.picture || defaultPicture
+                                            conversation.picture || defaultImage
                                         })`,
                                     }}
                                 ></div>
@@ -137,7 +148,7 @@ const Dashboard = () => {
                 <div className="dashboard__panel__settings">
                     <div
                         className="img"
-                        style={{ backgroundImage: `url(${user.picture || defaultPicture})` }}
+                        style={{ backgroundImage: `url(${user.picture || defaultImage})` }}
                     >
                         <FontAwesomeIcon icon={faCircle} style={{ color: "#53d05b" }} size="xs" />
                     </div>

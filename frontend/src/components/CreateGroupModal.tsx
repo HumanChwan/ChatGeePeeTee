@@ -33,6 +33,7 @@ const CreateGroupModal: React.FunctionComponent<ICreateDMModal> = ({
                 `${process.env.REACT_APP_SERVER_URL}/chat/create-group`,
                 {
                     members,
+                    groupName,
                 },
                 { withCredentials: true }
             );
@@ -119,9 +120,11 @@ const CreateGroupModal: React.FunctionComponent<ICreateDMModal> = ({
                             return;
                         }
 
-                        setMembers((members) => {
-                            return [...members, { username, admin: false }];
-                        });
+                        if (!members.some((member) => member.username === username))
+                            setMembers((members) => {
+                                return [...members, { username, admin: false }];
+                            });
+
                         setUsername("");
                     }}
                 >
@@ -133,6 +136,7 @@ const CreateGroupModal: React.FunctionComponent<ICreateDMModal> = ({
                                 setUsername(e.target.value);
                                 checkUsername(e.target.value);
                             }}
+                            required
                             id="username-field"
                             name="username-field"
                             className="primary-input"
@@ -150,12 +154,24 @@ const CreateGroupModal: React.FunctionComponent<ICreateDMModal> = ({
                     </div>
                     <input type="submit" value="Add User" className="btn right-btn" />
                 </form>
-                <input
-                    type="submit"
-                    value="Creat Group"
-                    className="btn right-btn"
-                    onClick={handleSubmit}
-                />
+                <div className="modal-form-member-list">
+                    {members.map((member, idx) => {
+                        return (
+                            <div className="modal-form-member" key={idx}>
+                                {member.username}{" "}
+                                <FontAwesomeIcon
+                                    icon={faXmark}
+                                    onClick={() => {
+                                        setMembers(
+                                            members.filter((m) => m.username !== member.username)
+                                        );
+                                    }}
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+                <input type="submit" value="Create Group" className="btn" onClick={handleSubmit} />
             </div>
         </Modal>
     );
