@@ -25,15 +25,18 @@ html,
 :root {
     --dark-elevation: rgb(120, 120, 120);
     --grey-scale-0: rgb(250, 252, 254);
-    --grey-scale-1: rgb(200, 204, 208);
+    --grey-scale-1: rgb(180, 182, 184);
     --grey-scale-1-5: rgb(240, 242, 245);
     --grey-scale-1-75: rgb(225, 227, 229);
     --grey-scale-2: rgb(192, 194, 196);
     --grey-scale-3: rgb(180, 182, 184);
+    --grey-scale-4: rgb(185, 187, 189);
     --grey-scale-5: rgb(128, 130, 132);
     --grey-scale-7: rgb(64, 66, 68);
     --grey-scale-8: rgb(32, 35, 38);
     --grey-scale-10: #010409;
+
+    --hover: rgb(255, 145, 145);
 
     --background: var(--grey-scale-2);
 }
@@ -51,6 +54,8 @@ body.dark {
     --grey-scale-7: rgb(128, 130, 132);
     --grey-scale-8: rgb(140, 143, 145);
     --grey-scale-10: rgb(150, 150, 150);
+
+    --hover: rgb(82, 33, 33);
 
     --background: var(--grey-scale-2);
 }
@@ -107,4 +112,26 @@ a {
 
 .btn:hover {
     background: lighten($primary, 5%);
+}
+
+.secondary-btn {
+    outline: none;
+    padding: 0.75rem 0rem;
+    cursor: pointer;
+
+    font-weight: 600;
+    font-size: 1rem;
+
+    border: 1px solid $primary;
+    border-radius: 0.5rem;
+
+    color: $primary;
+
+    background: transparent;
+
+    padding: 0.5rem 1rem;
+}
+
+.secondary-btn:hover {
+    background-color: rgb(246, 67, 67, 0.2);
 }

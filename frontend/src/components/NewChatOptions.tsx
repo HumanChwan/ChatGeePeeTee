@@ -3,15 +3,29 @@ import Options from "./Options";
 
 import CreateDMModal from "./CreateDMModal";
 import CreateGroupModal from "./CreateGroupModal";
+import { Conversation } from "../pages/Dashboard";
 
 const OPTIONS = ["Create a DM", "Create a Group"];
-const NewChatOptions = () => {
+
+interface INewChatOptions {
+    setConversations: (x: Conversation[] | ((x: Conversation[]) => Conversation[])) => void;
+}
+
+const NewChatOptions: React.FunctionComponent<INewChatOptions> = ({ setConversations }) => {
     const [selectedIdx, setSelectedIdx] = useState<number>(-1);
 
     return (
         <>
-            <CreateDMModal isOpen={selectedIdx === 0} setIdx={setSelectedIdx} />
-            <CreateGroupModal isOpen={selectedIdx === 1} setIdx={setSelectedIdx} />
+            <CreateDMModal
+                isOpen={selectedIdx === 0}
+                setIdx={setSelectedIdx}
+                setConversation={setConversations}
+            />
+            <CreateGroupModal
+                isOpen={selectedIdx === 1}
+                setIdx={setSelectedIdx}
+                setConversation={setConversations}
+            />
             <Options
                 options={OPTIONS.map((x) => ({ name: x }))}
                 setOptionSelectedIdx={setSelectedIdx}

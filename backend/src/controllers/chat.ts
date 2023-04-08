@@ -25,6 +25,7 @@ export const getChats = async (_req: Request, res: Response) => {
     try {
         const memberChats = await prisma.member.findMany({
             where: { uid: req.userId },
+            orderBy: { chat: { lastMessage: "desc" } },
             select: {
                 chat: {
                     select: {
@@ -71,6 +72,7 @@ export const getChats = async (_req: Request, res: Response) => {
                 where: { id: chat.id },
                 select: {
                     messages: {
+                        orderBy: { createdAt: "asc" },
                         select: {
                             id: true,
                             sender: {
@@ -78,7 +80,7 @@ export const getChats = async (_req: Request, res: Response) => {
                                     user: {
                                         select: {
                                             id: true,
-                                            name: true,
+                                            username: true,
                                             picture: true,
                                         },
                                     },
@@ -99,7 +101,7 @@ export const getChats = async (_req: Request, res: Response) => {
                 return {
                     id: message.id,
                     userId: message.sender.user.id,
-                    senderName: message.sender.user.name,
+                    senderName: message.sender.user.username,
                     senderPicture: message.sender.user.picture,
                     content: message.content,
                     fileLink: message.filePath,
@@ -135,8 +137,10 @@ const createMember = async (
 ): Promise<SerialisedMember | null> => {
     try {
         const user = await prisma.user.findUnique({
-            where: identificationAsId ? { id: userIdentification } : {username: userIdentification},
-            select: { id: true, name: true, picture: true },
+            where: identificationAsId
+                ? { id: userIdentification }
+                : { username: userIdentification },
+            select: { id: true, username: true, picture: true },
         });
         if (!user) return null;
 
@@ -152,7 +156,7 @@ const createMember = async (
         // TODO: add socket id instead garbage
         return {
             id: userIdentification,
-            name: user.name,
+            name: user.username,
             picture: user.picture,
             socketId: "socket-id",
         };
@@ -272,10 +276,12 @@ export const createGroup = async (_req: Request, res: Response) => {
     }
 };
 
-export const updateGroupName = (_req: Request, res: Response) => {
+export const addGroupMember = (_req: Request, res: Response) => {};
 
-}
+export const updateGroupName = (_req: Request, res: Response) => {};
 
-export const updateGroupPhoto = (_req: Request, res: Response) => {
+export const updateGroupPhoto = (_req: Request, res: Response) => {};
 
-}
+export const removeGroupMember = (_req: Request, res: Response) => {};
+
+export const toggleAdminStatus = (_req: Request, res: Response) => {};

@@ -1,3 +1,5 @@
+@use "./colors" as *;
+
 .dashboard {
     display: flex;
     justify-content: center;
@@ -28,7 +30,7 @@
 
             padding: 0 1.5rem;
 
-            color: var(--grey-scale-5);
+            color: $primary;
 
             background-color: var(--grey-scale-3);
 
@@ -40,6 +42,52 @@
             width: 100%;
 
             background-color: var(--grey-scale-4);
+            padding: 0.5rem;
+
+            & .conversation {
+                cursor: pointer;
+                display: flex;
+                justify-content: space-around;
+                align-items: center;
+
+                padding: 0.5rem;
+                border-radius: 0.5rem;
+
+                margin-bottom: 0.125rem;
+
+                transition: background-color ease 200ms;
+
+                &__image {
+                    flex: 0 0 20%;
+
+                    min-width: 3rem;
+                    min-height: 3rem;
+                    max-width: 3rem;
+                    max-height: 3rem;
+
+                    border-radius: 50%;
+
+                    background-position: center center;
+                    background-repeat: no-repeat;
+                    background-size: cover;
+
+                    margin-right: 1rem;
+                }
+
+                &__text {
+                    flex: 1 0 60%;
+
+                    color: var(--grey-scale-7);
+                }
+
+                &__meta {
+                    flex: 0 0 20%;
+                }
+
+                &:hover {
+                    background-color: var(--hover);
+                }
+            }
         }
 
         &__settings {
@@ -68,6 +116,8 @@
                 position: relative;
 
                 & > svg {
+                    border-radius: 50%;
+                    box-shadow: 0 0 2px 2px var(--dark-elevation);
                     position: absolute;
                     bottom: 0;
                     right: 0;

@@ -124,7 +124,7 @@ const Signup = () => {
                                     : "This username is not available"
                             }
                             style={{
-                                color: `${validUsername ? "#92da62" : "#ff4d4d"}`,
+                                color: `${validUsername ? "#799964" : "#ff4d4d"}`,
                             }}
                         />
                     )}

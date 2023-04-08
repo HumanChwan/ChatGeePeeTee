@@ -1,5 +1,5 @@
 import axios from "axios";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { pushErrorNotification } from "../components/Notifications";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCircle, faFile } from "@fortawesome/free-solid-svg-icons";
@@ -9,6 +9,7 @@ import { useAuth } from "../contexts/AuthContext";
 import defaultPicture from "../assets/user.png";
 import { Navigate, useNavigate } from "react-router-dom";
 import Options from "../components/Options";
+import LogoutPrompt from "../components/LogoutPrompt";
 
 interface Message {
     id: string;
@@ -21,7 +22,7 @@ interface Message {
     fileName: string | undefined;
 }
 
-interface Conversation {
+export interface Conversation {
     id: string; // Chat ID
     dm: boolean;
     name: string;
@@ -67,21 +68,6 @@ const Dashboard = () => {
         getAllConversations();
     }, []);
 
-    const logout = useCallback(async () => {
-        const { data } = await axios.get(`${process.env.REACT_APP_SERVER_URL}/auth/logout`, {
-            withCredentials: true,
-        });
-
-        setUser(null);
-
-        if (!data || !data.success) {
-            pushErrorNotification({
-                title: "Error",
-                message: "Try refreshing the browser",
-            });
-        }
-    }, [setUser]);
-
     useEffect(() => {
         if (selectedSettingIdx === -1) return;
 
@@ -90,12 +76,11 @@ const Dashboard = () => {
                 navigate("/profile");
                 break;
             case 1:
-                logout();
                 break;
             default:
                 console.error("Weird stuff happened");
         }
-    }, [selectedSettingIdx, logout, navigate]);
+    }, [selectedSettingIdx, navigate]);
 
     if (!user) return <Navigate to="/login" replace />;
 
@@ -104,7 +89,7 @@ const Dashboard = () => {
             <section className="dashboard__panel">
                 <div className="dashboard__panel__chat-options">
                     <h3>Chat Gee Pee Tee</h3>
-                    <NewChatOptions />
+                    <NewChatOptions setConversations={setConversations} />
                 </div>
                 <div className="dashboard__panel__conversations">
                     {conversations.map((conversation, idx) => {
@@ -122,7 +107,11 @@ const Dashboard = () => {
                             >
                                 <div
                                     className="conversation__image"
-                                    style={{ backgroundImage: `url(${conversation.picture})` }}
+                                    style={{
+                                        backgroundImage: `url(${
+                                            conversation.picture || defaultPicture
+                                        })`,
+                                    }}
                                 ></div>
                                 <div className="conversation__text">
                                     <h3>{conversation.name}</h3>
@@ -160,6 +149,10 @@ const Dashboard = () => {
                             vertical="top"
                             horizontal="right"
                             gear
+                        />
+                        <LogoutPrompt
+                            isOpen={selectedSettingIdx === 1}
+                            setIdx={setSelectedSettingIdx}
                         />
                     </div>
                 </div>
