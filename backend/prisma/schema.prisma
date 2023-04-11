@@ -23,6 +23,7 @@ model User {
   lastOnline DateTime @map("last_online")
 
   participation Member[]
+  messages      Message[]
 }
 
 model Chat {
@@ -33,30 +34,35 @@ model Chat {
   createdAt        DateTime @default(now()) @map("created_at")
   lastMessage      DateTime
   disappearingmode Boolean
-  participants     Member[]
+
+  participants Member[]
+  messages     Message[]
 }
 
 model Member {
-  id    String  @id @db.VarChar(100)
-  uid   String  @db.VarChar(100)
-  cid   String  @db.VarChar(100)
-  admin Boolean
+  uid     String  @db.VarChar(100)
+  cid     String  @db.VarChar(100)
+  admin   Boolean
+  removed Boolean
 
   messages Message[]
 
   user User @relation(fields: [uid], references: [id])
   chat Chat @relation(fields: [cid], references: [id])
 
+  @@id([uid, cid])
   @@unique([uid, cid])
 }
 
 model Message {
-  id           String   @id @db.VarChar(100)
-  createdAt    DateTime @default(now()) @map("created_at")
-  mid          String   @db.VarChar(100)
-  content      String?  @db.VarChar(100)
-  filePath     String?  @db.VarChar(100)
-  disappearing Boolean
+  id        String   @id @db.VarChar(100)
+  createdAt DateTime @default(now()) @map("created_at")
+  uid       String   @db.VarChar(100)
+  cid       String   @db.VarChar(100)
+  content   String?  @db.VarChar(100)
+  filePath  String?  @db.VarChar(100)
 
-  sender Member @relation(fields: [mid], references: [id])
+  member Member @relation(fields: [uid, cid], references: [uid, cid])
+  chat   Chat   @relation(fields: [cid], references: [id])
+  user   User   @relation(fields: [uid], references: [id])
 }

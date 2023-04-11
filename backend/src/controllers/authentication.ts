@@ -17,9 +17,9 @@ export const signup = async (req: Request, res: Response) => {
         return res.status(400).json({ success: false, message: "Malformed body" });
     }
 
-    const { name, email, password, username } = body;
+    const { name, email, password, username, theme } = body;
 
-    if (!name || !email || !password || !username)
+    if (!name || !email || !password || !username || !theme)
         return res.status(400).json({ success: false, message: "Malformed body" });
 
     try {
@@ -37,6 +37,7 @@ export const signup = async (req: Request, res: Response) => {
                 username,
                 online: false,
                 lastOnline: new Date(),
+                dark: theme,
             },
         });
 
@@ -189,20 +190,68 @@ export const updateProfile = async (_req: Request, res: Response) => {
             data: {
                 username: username || user.username,
                 email: email || user.email,
-                name: name || user.name
-            }
-        })
+                name: name || user.name,
+            },
+        });
 
         return res.status(200).json({
-            success: true, user: serializeUser(updatedUser), message: "Updated User successfully!"
-        })
+            success: true,
+            user: serializeUser(updatedUser),
+            message: "Updated User successfully!",
+        });
     } catch (err) {
-        console.error(`[#] ${err}`)
+        console.error(`[#] ${err}`);
         return res.status(500).json({
             success: false,
-            message: "Internal Server Error"
-        })
+            message: "Internal Server Error",
+        });
     }
+};
 
+export const updateTheme = async (_req: Request, res: Response) => {
+    const req = _req as AuthenticatedUserRequest;
 
+    if (!req.body || req.body.theme === undefined) 
+        return res.status(400).json({ success: false, message: "Malformed body" });
+
+    try {
+        await prisma.user.update({
+            where: { id: req.userId },
+            data: { dark: req.body.theme }
+        }) 
+
+        return res.status(200).json({ success: true, message: "Updated Theme" })
+    } catch (err) {
+        console.error(`[#] ${err}`);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
+    }
+}
+
+export const removeProfilePicture = async (_req: Request, res: Response) => {
+    const req = _req as AuthenticatedUserRequest;
+    try {
+        const user = await prisma.user.update({
+            where: { id: req.userId },
+            data: { picture: null },
+        });
+
+        if (!user) {
+            return res.status(403).json({ success: false, message: "Invalid id used for cookie" });
+        }
+
+        return res.status(200).json({
+            success: true,
+            user: serializeUser(user),
+            message: "Updated User successfully!",
+        });
+    } catch (err) {
+        console.error(`[#] ${err}`);
+        return res.status(500).json({
+            success: false,
+            message: "Internal Server Error",
+        });
+    }
 };

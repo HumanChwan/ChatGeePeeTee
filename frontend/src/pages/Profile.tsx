@@ -1,20 +1,28 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { useAuth } from "../contexts/AuthContext";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 
-import defaultImage from "../assets/user.png";
+import useDefaultImage from "../hooks/useDefaultImage";
 import { useState } from "react";
 import axios from "axios";
 import { pushErrorNotification, pushSuccessNotification } from "../components/Notifications";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faArrowLeft } from "@fortawesome/free-solid-svg-icons";
 
 const Profile = () => {
     const { user, setUser } = useAuth()!;
+
+    const defaultImage = useDefaultImage();
 
     const [username, setUsername] = useState(user?.username);
     const [name, setName] = useState(user?.name);
     const [email, setEmail] = useState(user?.email);
 
     const [picture, setPicture] = useState(user?.picture || defaultImage);
+
+    useEffect(() => {
+        setPicture(user?.picture || defaultImage);
+    }, [defaultImage, user?.picture]);
 
     if (!user) return <Navigate to="/" replace />;
 
@@ -90,6 +98,9 @@ const Profile = () => {
                     title: "Error",
                     message: "Could not update profile :(",
                 });
+                setUsername(user?.username);
+                setName(user?.name);
+                setEmail(user?.email);
                 return;
             }
 
@@ -104,14 +115,53 @@ const Profile = () => {
                 title: "Error",
                 message: "Could not update profile :(",
             });
+            setUsername(user?.username);
+            setName(user?.name);
+            setEmail(user?.email);
+        }
+    };
+
+    const removePhoto = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
+        e.stopPropagation();
+
+        try {
+            const { data } = await axios.get(
+                `${process.env.REACT_APP_SERVER_URL}/auth/remove-profile-picture`,
+                {
+                    withCredentials: true,
+                }
+            );
+
+            if (!data || !data.success) {
+                pushErrorNotification({
+                    title: "Error",
+                    message: "Could not remove photo.",
+                });
+                return;
+            }
+
+            setUser(data.user);
+            pushSuccessNotification({
+                title: "Removed Photo",
+                message: "Removed profile picture successfully",
+            });
+        } catch (err) {
+            console.error(err);
+            pushErrorNotification({
+                title: "Error",
+                message: "Could not remove photo.",
+            });
         }
     };
 
     return (
         <main className="container profile">
+            <Link to="/" className="btn back-btn">
+                <FontAwesomeIcon icon={faArrowLeft} /> Back
+            </Link>
             <div className="profile__photo">
                 <form className="profile__photo_form">
-                    <img src={picture} alt="profile" />
+                    <div style={{ backgroundImage: `url(${picture})` }} className="img" />
                     <label className="btn">
                         Update Photo
                         <input
@@ -122,8 +172,12 @@ const Profile = () => {
                         />
                     </label>
                 </form>
+                <button className="secondary-btn" onClick={removePhoto}>
+                    Remove Photo
+                </button>
             </div>
             <form className="profile__details" onSubmit={handleProfileUpdate}>
+                <h1>Profile</h1>
                 <div className="profile__details__fields">
                     <div className="profile__details__field">
                         <input
