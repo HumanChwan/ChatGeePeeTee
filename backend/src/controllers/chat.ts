@@ -3,31 +3,7 @@ import { AuthenticatedUserRequest } from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "../prisma";
 
-interface Member {
-    userId: string;
-    username: string;
-    picture: string | null;
-    admin: boolean;
-}
-interface Message {
-    id: string;
-    userId: string;
-    senderName: string;
-    senderPicture: string | null;
-    removed: boolean; 
-    content: string | null;
-    fileLink: string | null;
-    fileName: string | undefined;
-}
-interface Chat {
-    messages: Message[];
-    members: Member[];
-    id: string;
-    dm: boolean;
-    name: string | null;
-    picture: string | null;
-    lastMessage: Date;
-}
+import { Member, Chat, Message } from "../types";
 
 const getMembersOfGroup = async (cid: string): Promise<Member[] | null> => {
     const members = await prisma.member.findMany({
@@ -347,8 +323,7 @@ export const addGroupMember = async (_req: Request, res: Response) => {
 export const leaveGroup = async (_req: Request, res: Response) => {
     const req = _req as AuthenticatedUserRequest;
 
-    if (!req.body.cid)
-        return res.status(400).json({ success: false, message: "Malformed Body" });
+    if (!req.body.cid) return res.status(400).json({ success: false, message: "Malformed Body" });
 
     try {
         await prisma.member.update({
@@ -356,13 +331,11 @@ export const leaveGroup = async (_req: Request, res: Response) => {
             data: { removed: true },
         });
 
-        return res
-            .status(200)
-            .json({ success: true, message: "Left the group" });
+        return res.status(200).json({ success: true, message: "Left the group" });
     } catch (err) {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
-}
+};
 
 export const updateGroup = (_req: Request, res: Response) => {};
 

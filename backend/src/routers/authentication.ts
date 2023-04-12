@@ -27,7 +27,7 @@ router.get("/get-user", getUser);
 router.post("/update-profile", updateProfile);
 router.post("/update-profile-picture", updateProfilePicture);
 
-router.post("/update-theme", updateTheme)
+router.post("/update-theme", updateTheme);
 
 router.get("/remove-profile-picture", removeProfilePicture);
 

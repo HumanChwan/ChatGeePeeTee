@@ -5,6 +5,7 @@ import { pushErrorNotification } from "./Notifications";
 import { Conversation } from "../pages/Dashboard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
+import { useAuth } from "../contexts/AuthContext";
 
 interface ICreateDMModal {
     isOpen: boolean;
@@ -22,6 +23,8 @@ const CreateGroupModal: React.FunctionComponent<ICreateDMModal> = ({
     setIdx,
     setConversation,
 }) => {
+    const { user } = useAuth()!;
+
     const [groupName, setGroupName] = useState<string>("");
     const [username, setUsername] = useState<string>("");
     const [members, setMembers] = useState<AddableMember[]>([]);
@@ -120,7 +123,10 @@ const CreateGroupModal: React.FunctionComponent<ICreateDMModal> = ({
                             return;
                         }
 
-                        if (!members.some((member) => member.username === username))
+                        if (
+                            !members.some((member) => member.username === username) &&
+                            username !== user?.username
+                        )
                             setMembers((members) => {
                                 return [...members, { username, admin: false }];
                             });
