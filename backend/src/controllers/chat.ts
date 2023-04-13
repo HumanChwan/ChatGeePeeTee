@@ -1,9 +1,14 @@
 import { Request, Response } from "express";
-import { AuthenticatedUserRequest } from "../types";
+import { AuthenticatedUserRequest, IOAuthenticatedUserRequest } from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "../prisma";
 
 import { Member, Chat, Message } from "../types";
+import { DISAPPEARING_TIME, FILE_SCOPE, FORM_STATIC_URL, GET_PATH } from "../utils";
+import { groupPictureUpload } from "../multer";
+
+import * as fs from "fs/promises";
+import path from "path";
 
 const getMembersOfGroup = async (cid: string): Promise<Member[] | null> => {
     const members = await prisma.member.findMany({
@@ -30,6 +35,24 @@ const getMembersOfGroup = async (cid: string): Promise<Member[] | null> => {
     }));
 };
 
+// Function to remove messages which are marked disappearing and
+const updateMessageTable = async (cid: string): Promise<void> => {
+    try {
+        await prisma.message.deleteMany({
+            where: {
+                cid: cid,
+                disappearing: true,
+                createdAt: {
+                    lte: new Date(Date.now() - DISAPPEARING_TIME),
+                },
+            },
+        });
+    } catch (err) {
+        console.error(err);
+        console.error(`For some reason chat with id: ${cid}, doesn't exist`);
+    }
+};
+
 export const getChats = async (_req: Request, res: Response) => {
     const req = _req as AuthenticatedUserRequest;
 
@@ -45,6 +68,7 @@ export const getChats = async (_req: Request, res: Response) => {
                         name: true,
                         picture: true,
                         lastMessage: true,
+                        disappearingMode: true,
                     },
                 },
             },
@@ -65,21 +89,18 @@ export const getChats = async (_req: Request, res: Response) => {
                     chat.picture = otherMember[0].picture;
                 }
             }
+            await updateMessageTable(chat.id);
             const messages = await prisma.message.findMany({
                 where: { cid: chat.id },
                 orderBy: { createdAt: "asc" },
                 select: {
                     id: true,
-                    sender: {
+                    member: { select: { removed: true } },
+                    user: {
                         select: {
-                            user: {
-                                select: {
-                                    id: true,
-                                    username: true,
-                                    picture: true,
-                                },
-                            },
-                            removed: true,
+                            id: true,
+                            username: true,
+                            picture: true,
                         },
                     },
                     content: true,
@@ -94,10 +115,10 @@ export const getChats = async (_req: Request, res: Response) => {
             const sanitisedMessages: Message[] = messages.map((message) => {
                 return {
                     id: message.id,
-                    userId: message.sender.user.id,
-                    senderName: message.sender.user.username,
-                    senderPicture: message.sender.user.picture,
-                    removed: message.sender.removed,
+                    userId: message.user.id,
+                    senderName: message.user.username,
+                    senderPicture: message.user.picture,
+                    removed: message.member.removed,
                     content: message.content,
                     fileLink: message.filePath,
                     fileName: message.filePath?.split("/").pop(),
@@ -112,6 +133,29 @@ export const getChats = async (_req: Request, res: Response) => {
         return res
             .status(200)
             .json({ success: true, message: `Found ${chats.length} chat(s)`, chats });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+export const getMembers = async (req: Request, res: Response) => {
+    const { cid } = req.query;
+
+    if (!cid || typeof cid !== "string")
+        return res.status(400).json({ success: false, message: "Malformed Query" });
+
+    try {
+        const members = await getMembersOfGroup(cid);
+
+        if (!members)
+            return res
+                .status(403)
+                .json({ success: false, message: "Chat with that cid doesn't exist" });
+
+        return res
+            .status(200)
+            .json({ success: true, message: `Found ${members.length} members`, members });
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -139,11 +183,9 @@ const createMember = async (
         });
         if (!user) return null;
 
-        const ID = uuidv4();
         await prisma.member.upsert({
-            where: { id: ID },
+            where: { uid_cid: { uid: user.id, cid: chatId } },
             create: {
-                id: ID,
                 uid: user.id,
                 cid: chatId,
                 removed: false,
@@ -176,11 +218,27 @@ export const createDM = async (_req: Request, res: Response) => {
     if (!username) return res.status(400).json({ success: false, message: "Malformed Body" });
 
     try {
+        // Check if username is of the same person as the one creating the DM
+        const requestingUser = await prisma.user.findUnique({
+            where: { id: req.userId },
+            select: { username: true },
+        });
+        if (!requestingUser)
+            return res
+                .status(403)
+                .json({ success: false, message: "User with that Id doesn't exist" });
+
+        if (username === requestingUser.username)
+            return res
+                .status(403)
+                .json({ success: false, message: "Can't make a DM with same user" });
+
         const chat = await prisma.chat.create({
             data: {
                 id: uuidv4(),
                 dm: true,
                 lastMessage: new Date(),
+                disappearingMode: false,
             },
         });
 
@@ -199,18 +257,15 @@ export const createDM = async (_req: Request, res: Response) => {
             name: userTwo.username,
             picture: userTwo.picture,
             lastMessage: new Date(),
+            disappearingMode: false,
             messages: [],
             members: [
                 {
-                    username: userOne.username,
-                    picture: userOne.picture,
-                    userId: userOne.userId,
+                    ...userOne,
                     admin: true,
                 },
                 {
-                    username: userTwo.username,
-                    picture: userTwo.picture,
-                    userId: userTwo.userId,
+                    ...userTwo,
                     admin: true,
                 },
             ],
@@ -252,6 +307,7 @@ export const createGroup = async (_req: Request, res: Response) => {
                 dm: false,
                 lastMessage: new Date(),
                 name: groupName,
+                disappearingMode: false,
             },
         });
 
@@ -272,10 +328,11 @@ export const createGroup = async (_req: Request, res: Response) => {
 
         const serialisedChat: Chat = {
             id: chat.id,
-            dm: true,
+            dm: false,
             name: chat.name,
             picture: null,
             lastMessage: new Date(),
+            disappearingMode: chat.disappearingMode,
             messages: [],
             members: serialisedMembers.map((member) => ({
                 userId: member!.userId,
@@ -299,6 +356,8 @@ export const createGroup = async (_req: Request, res: Response) => {
     }
 };
 
+export const recordMessage = async (_req: Request, res: Response) => {};
+
 export const addGroupMember = async (_req: Request, res: Response) => {
     const req = _req as AuthenticatedUserRequest;
 
@@ -321,7 +380,7 @@ export const addGroupMember = async (_req: Request, res: Response) => {
 };
 
 export const leaveGroup = async (_req: Request, res: Response) => {
-    const req = _req as AuthenticatedUserRequest;
+    const req = _req as IOAuthenticatedUserRequest;
 
     if (!req.body.cid) return res.status(400).json({ success: false, message: "Malformed Body" });
 
@@ -331,6 +390,10 @@ export const leaveGroup = async (_req: Request, res: Response) => {
             data: { removed: true },
         });
 
+        // Socket stuff
+        req.io.in(`user-${req.userId}`).socketsLeave(`chat-${req.body.cid}`);
+        // TODO: send message to all members of the chat
+
         return res.status(200).json({ success: true, message: "Left the group" });
     } catch (err) {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
@@ -339,10 +402,56 @@ export const leaveGroup = async (_req: Request, res: Response) => {
 
 export const updateGroup = (_req: Request, res: Response) => {};
 
-export const updateGroupPhoto = (_req: Request, res: Response) => {};
+export const updateGroupPhoto = (_req: Request, res: Response) => {
+    groupPictureUpload.single("profile_photo")(_req, res, async (err) => {
+        const req = _req as AuthenticatedUserRequest;
+        if (err || !req.file) {
+            console.error(`[#] ${err}`);
+            return res.status(403).json({ success: false, message: "Forbidden" });
+        }
+
+        if (!req.body || !req.body.cid)
+            return res.status(400).json({ success: false, message: "Malformed Body" });
+
+        try {
+            const pictureObj = await prisma.chat.findUnique({
+                where: { id: req.body.cid },
+                select: { picture: true },
+            });
+            if (!pictureObj) return res.status(403).json({ success: false, message: "Forbidden" });
+
+            await prisma.user.update({
+                where: { id: req.userId },
+                data: { picture: req.file.filename },
+            });
+
+            try {
+                if (pictureObj.picture)
+                    await fs.unlink(
+                        path.join(GET_PATH[FILE_SCOPE.GROUP_PROFILE], pictureObj.picture)
+                    );
+            } catch (err) {
+                console.error(
+                    `Coulndn't find "${pictureObj.picture}" in profile images directory!`
+                );
+            }
+
+            // TODOO: Send update to all group members
+
+            return res.status(200).json({
+                success: true,
+                message: "Updated successfully!",
+                image: FORM_STATIC_URL(req.file.filename, FILE_SCOPE.GROUP_PROFILE),
+            });
+        } catch (err) {
+            console.error(`[#] ${err}`);
+            return res.status(500).json({ success: false, message: "Internal Server Error" });
+        }
+    });
+};
 
 export const removeGroupMember = async (_req: Request, res: Response) => {
-    const req = _req as AuthenticatedUserRequest;
+    const req = _req as IOAuthenticatedUserRequest;
 
     if (!req.body.uid || !req.body.cid)
         return res.status(400).json({ success: false, message: "Malformed Body" });
@@ -352,6 +461,10 @@ export const removeGroupMember = async (_req: Request, res: Response) => {
             where: { uid_cid: { uid: req.body.uid, cid: req.body.cid } },
             data: { removed: true },
         });
+
+        // Socket Stuff
+        req.io.in(`user-${req.body.uid}`).socketsLeave(`chat-${req.body.cid}`);
+        // TODO: send message to all members of the chat
 
         const members = await getMembersOfGroup(req.body.cid);
 

@@ -1,7 +1,8 @@
 import { Request } from "express";
-import { Socket } from "socket.io";
+import { Server, Socket } from "socket.io";
 
 export type AuthenticatedUserRequest = Request & { userId: string };
+export type IOAuthenticatedUserRequest = AuthenticatedUserRequest & { io: Server };
 export type AuthenticatedUserSocket = Socket & { userId: string };
 
 export interface Member {
@@ -28,4 +29,5 @@ export interface Chat {
     name: string | null;
     picture: string | null;
     lastMessage: Date;
+    disappearingMode: Boolean;
 }

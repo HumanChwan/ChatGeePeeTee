@@ -5,7 +5,9 @@ import {
     createDM,
     createGroup,
     getChats,
+    getMembers,
     leaveGroup,
+    recordMessage,
     removeGroupMember,
     toggleAdminStatus,
     updateGroup,
@@ -18,9 +20,12 @@ const router = Router();
 router.use(authorization);
 
 router.get("/get-chats", getChats);
+router.get("/get-members", getMembers);
+router.get("/leave-group", leaveGroup);
 router.post("/create-dm", createDM);
 router.post("/create-group", createGroup);
-router.get("/leave-group", leaveGroup);
+
+router.post("/message", recordMessage);
 
 // Group Admin routes
 router.use(groupAdminAuthorization);

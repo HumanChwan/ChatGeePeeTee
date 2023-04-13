@@ -33,7 +33,7 @@ model Chat {
   picture          String?  @db.VarChar(100)
   createdAt        DateTime @default(now()) @map("created_at")
   lastMessage      DateTime
-  disappearingmode Boolean
+  disappearingMode Boolean  @map("disappearing_mode")
 
   participants Member[]
   messages     Message[]
@@ -55,12 +55,13 @@ model Member {
 }
 
 model Message {
-  id        String   @id @db.VarChar(100)
-  createdAt DateTime @default(now()) @map("created_at")
-  uid       String   @db.VarChar(100)
-  cid       String   @db.VarChar(100)
-  content   String?  @db.VarChar(100)
-  filePath  String?  @db.VarChar(100)
+  id           String   @id @db.VarChar(100)
+  createdAt    DateTime @default(now()) @map("created_at")
+  uid          String   @db.VarChar(100)
+  cid          String   @db.VarChar(100)
+  content      String?  @db.VarChar(100)
+  filePath     String?  @db.VarChar(100)
+  disappearing Boolean
 
   member Member @relation(fields: [uid, cid], references: [uid, cid])
   chat   Chat   @relation(fields: [cid], references: [id])

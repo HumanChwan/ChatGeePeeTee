@@ -4,11 +4,14 @@ import { v4 as uuidv4 } from "uuid";
 import * as bcrypt from "bcrypt";
 
 import { prisma } from "../prisma";
-import { serializeUser } from "../utils";
+import { FILE_SCOPE, FORM_STATIC_URL, GET_PATH, serializeUser } from "../utils";
 import { profilePictureUpload } from "../multer";
 
 import { AuthenticatedUserRequest } from "../types";
-import { COOKIE_CONFIG, SERVER_URL, TOKEN_SECRET } from "../config/config";
+import { COOKIE_CONFIG, TOKEN_SECRET } from "../config/config";
+
+import * as fs from "fs/promises";
+import path from "path";
 
 export const signup = async (req: Request, res: Response) => {
     const { body } = req;
@@ -153,17 +156,30 @@ export const updateProfilePicture = async (_req: Request, res: Response) => {
         }
 
         try {
+            const pictureObj = await prisma.user.findUnique({
+                where: { id: req.userId },
+                select: { picture: true },
+            });
+            if (!pictureObj) return res.status(403).json({ success: false, message: "Forbidden" });
+
             await prisma.user.update({
                 where: { id: req.userId },
-                data: {
-                    picture: `${SERVER_URL}/images/profile/${req.file.filename}`,
-                },
+                data: { picture: req.file.filename },
             });
+
+            try {
+                if (pictureObj.picture)
+                    await fs.unlink(path.join(GET_PATH[FILE_SCOPE.PROFILE], pictureObj.picture));
+            } catch (err) {
+                console.error(
+                    `Coulndn't find "${pictureObj.picture}" in profile images directory!`
+                );
+            }
 
             return res.status(200).json({
                 success: true,
                 message: "Updated successfully!",
-                image: `${SERVER_URL}/images/profile/${req.file.filename}`,
+                image: FORM_STATIC_URL(req.file.filename, FILE_SCOPE.PROFILE),
             });
         } catch (err) {
             console.error(`[#] ${err}`);
