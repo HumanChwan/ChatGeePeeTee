@@ -1,7 +1,13 @@
 import React, { useRef, useState, useEffect } from "react";
 import { Conversation } from "../pages/Dashboard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faFile, faPaperPlane, faPaperclip, faXmark } from "@fortawesome/free-solid-svg-icons";
+import {
+    faArrowDown,
+    faFile,
+    faPaperPlane,
+    faPaperclip,
+    faXmark,
+} from "@fortawesome/free-solid-svg-icons";
 import useDefaultImage from "../hooks/useDefaultImage";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
@@ -22,9 +28,20 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
     const [openSettings, setOpenSettings] = useState<boolean>(false);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const messagesRef = useRef<HTMLDivElement>(null);
+    const [goDown, setGoDown] = useState<boolean>(true);
+
+    const handleScroll = (e: React.UIEvent<HTMLDivElement, UIEvent>) => {
+        const result =
+            e.currentTarget.scrollTop + e.currentTarget.clientHeight >=
+            e.currentTarget.scrollHeight - 1;
+
+        setGoDown(!result);
+    };
 
     useEffect(() => {
         setOpenSettings(false);
+        scrollToBottom();
         if (!conversation || !conversation.dm || !user) return;
 
         const otherUser = conversation.members.filter((member) => member.userId !== user.id);
@@ -34,13 +51,28 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
             .get(
                 `${process.env.REACT_APP_SERVER_URL}/auth/get-user-status?uid=${encodeURIComponent(
                     otherUser[0].userId
-                )}`
+                )}`,
+                {
+                    withCredentials: true,
+                }
             )
             .then(({ data }) => {
                 if (!data || !data.success) return;
                 setOnline(data.online);
             });
     }, [user, conversation]);
+
+    const scrollToBottom = () => {
+        if (!messagesRef.current) return;
+
+        messagesRef.current.scrollTo({
+            top: messagesRef.current.scrollHeight,
+            left: 0,
+            behavior: "smooth",
+        });
+
+        setGoDown(false);
+    };
 
     if (!conversation)
         return (
@@ -130,13 +162,14 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
                     <ChatSettings conversation={conversation} setOpen={setOpenSettings} />
                 )}
             </div>
-            <div className="chat__messages">
+            <div className="chat__messages" ref={messagesRef} onScroll={handleScroll}>
                 {conversation.messages.map((message) => {
                     return (
                         <div
                             className={`chat__messages__message ${
                                 message.userId === user?.id ? "sent" : "received"
                             }`}
+                            key={message.id}
                         >
                             <div className="chat__messages__message__detail">
                                 <div
@@ -154,7 +187,13 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
                                     {message.fileLink && (
                                         <div className="content-file">
                                             <FontAwesomeIcon icon={faFile} />
-                                            <a href={message.fileLink}>{message.fileName}</a>
+                                            <a
+                                                href={message.fileLink}
+                                                target="_blank"
+                                                rel="noreferrer"
+                                            >
+                                                {message.fileName}
+                                            </a>
                                         </div>
                                     )}
                                     {message.content && (
@@ -165,6 +204,11 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
                         </div>
                     );
                 })}
+                {goDown && (
+                    <div className="chat__messages__go-down" onClick={scrollToBottom}>
+                        <FontAwesomeIcon icon={faArrowDown} />
+                    </div>
+                )}
             </div>
             <form className="chat__box" onSubmit={handleMessageSubmit}>
                 {file && (

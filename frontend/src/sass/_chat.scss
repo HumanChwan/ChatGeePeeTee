@@ -23,11 +23,13 @@
     height: 100%;
 
     flex-direction: column;
+    position: relative;
 
     &__top {
         width: 100%;
         min-height: 4rem;
         background-color: var(--grey-scale-3);
+        box-shadow: 0 0 2px 1px var(--dark-elevation);
 
         display: flex;
         align-items: center;
@@ -81,10 +83,37 @@
 
         color: var(--grey-scale-7);
 
+        overflow-y: auto;
+
+        &__go-down {
+            position: absolute;
+
+            bottom: 5rem;
+            left: 50%;
+            transform: translateX(-50%);
+
+            width: max-content;
+            float: left;
+            padding: 0.5rem 0.75rem;
+
+            border-radius: 50%;
+
+            color: var(--grey-scale-7);
+
+            box-shadow: 0 0 3px 2px var(--dark-elevation);
+
+            background-color: var(--grey-scale-1-5);
+
+            cursor: pointer;
+        }
+
         &__message {
+            padding: 0.5rem 0;
             width: 100%;
 
             display: flex;
+
+            margin-bottom: 1rem;
 
             &.sent {
                 flex-direction: row-reverse;
@@ -92,21 +121,49 @@
                 text-align: right;
             }
 
+            &:hover {
+                background-color: var(--grey-scale-4-5);
+            }
+
             &__detail {
                 width: 5rem;
 
                 display: flex;
-                justify-content: center;
                 align-items: center;
                 flex-direction: column;
 
                 & > .img {
                     background-position: center center;
                     background-size: cover;
-                    width: 2em;
-                    height: 2em;
+                    width: 2.75em;
+                    height: 2.75em;
 
                     border-radius: 50%;
+                }
+            }
+
+            &__main {
+                display: flex;
+                flex-direction: column;
+                gap: 0.25rem;
+
+                & > h2 {
+                    font-weight: 600;
+                    font-size: 1.125rem;
+                }
+
+                &__content {
+                    & .content {
+                        &-file {
+                            display: flex;
+                            justify-content: center;
+                            align-items: center;
+                            gap: 1rem;
+                            background-color: var(--grey-scale-5); // rgb(50, 51, 53);
+                            padding: 1rem 1.5rem;
+                            border-radius: 0.5rem;
+                        }
+                    }
                 }
             }
         }
@@ -118,6 +175,7 @@
         max-height: 6rem;
         flex-grow: 1;
         background-color: var(--grey-scale-3);
+        box-shadow: 0 0 2px 1px var(--dark-elevation);
 
         display: flex;
         justify-content: center;
