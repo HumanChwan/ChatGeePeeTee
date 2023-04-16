@@ -6,6 +6,7 @@ import useDefaultImage from "../hooks/useDefaultImage";
 import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import ChatSettings from "./ChatSettings";
+import { pushErrorNotification } from "./Notifications";
 
 interface IChatProps {
     conversation: Conversation | null;
@@ -49,8 +50,45 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
             </div>
         );
 
-    const handleMessageSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+        const form = new FormData();
+        if (file) form.append("file", file);
+        form.append("cid", conversation.id);
+        form.append("content", messageContent);
+
+        try {
+            const { data } = await axios.post(
+                `${process.env.REACT_APP_SERVER_URL}/chat/message`,
+                form,
+                {
+                    withCredentials: true,
+                    headers: {
+                        "Content-Type": "multipart/form-data",
+                    },
+                }
+            );
+
+            if (!data || !data.success) {
+                pushErrorNotification({
+                    title: "Error",
+                    message: "Some thing didn't work out :(",
+                });
+                return;
+            }
+
+            console.log(data.userMessage);
+        } catch (err) {
+            console.error(err);
+            pushErrorNotification({
+                title: "Error",
+                message: "Some thing didn't work out :(",
+            });
+        } finally {
+            setMessageContent("");
+            setFile(null);
+            if (fileInputRef.current) fileInputRef.current.value = "";
+        }
     };
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -92,7 +130,42 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
                     <ChatSettings conversation={conversation} setOpen={setOpenSettings} />
                 )}
             </div>
-            <div className="chat__messages"></div>
+            <div className="chat__messages">
+                {conversation.messages.map((message) => {
+                    return (
+                        <div
+                            className={`chat__messages__message ${
+                                message.userId === user?.id ? "sent" : "received"
+                            }`}
+                        >
+                            <div className="chat__messages__message__detail">
+                                <div
+                                    className="img"
+                                    style={{
+                                        backgroundImage: `url(${
+                                            message.senderPicture || defaultImage
+                                        })`,
+                                    }}
+                                ></div>
+                            </div>
+                            <div className="chat__messages__message__main">
+                                <h2>{message.senderName}</h2>
+                                <div className="chat__messages__message__main__content">
+                                    {message.fileLink && (
+                                        <div className="content-file">
+                                            <FontAwesomeIcon icon={faFile} />
+                                            <a href={message.fileLink}>{message.fileName}</a>
+                                        </div>
+                                    )}
+                                    {message.content && (
+                                        <p className="content-text">{message.content}</p>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    );
+                })}
+            </div>
             <form className="chat__box" onSubmit={handleMessageSubmit}>
                 {file && (
                     <div className="chat__box_file">

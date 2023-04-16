@@ -78,6 +78,38 @@
         width: 100%;
         flex-grow: 1;
         height: 100%;
+
+        color: var(--grey-scale-7);
+
+        &__message {
+            width: 100%;
+
+            display: flex;
+
+            &.sent {
+                flex-direction: row-reverse;
+
+                text-align: right;
+            }
+
+            &__detail {
+                width: 5rem;
+
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                flex-direction: column;
+
+                & > .img {
+                    background-position: center center;
+                    background-size: cover;
+                    width: 2em;
+                    height: 2em;
+
+                    border-radius: 50%;
+                }
+            }
+        }
     }
 
     &__box {

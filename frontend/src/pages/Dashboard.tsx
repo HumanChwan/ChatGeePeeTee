@@ -1,14 +1,15 @@
 import axios from "axios";
-import { useState, useEffect } from "react";
-import { pushErrorNotification } from "../components/Notifications";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { useState, useEffect, useCallback } from "react";
+import Options from "../components/Options";
+import io, { Socket } from "socket.io-client";
 import { faCircle, faFile } from "@fortawesome/free-solid-svg-icons";
-import NewChatOptions from "../components/NewChatOptions";
-import { useAuth } from "../contexts/AuthContext";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+import { useAuth } from "../contexts/AuthContext";
+import NewChatOptions from "../components/NewChatOptions";
+import { pushErrorNotification } from "../components/Notifications";
 import useDefaultImage from "../hooks/useDefaultImage";
 import { Navigate, useNavigate } from "react-router-dom";
-import Options from "../components/Options";
 import LogoutPrompt from "../components/LogoutPrompt";
 import Chat from "../components/Chat";
 
@@ -25,6 +26,7 @@ export interface Message {
     senderName: string;
     senderPicture: string | null;
     removed: boolean;
+    createdAt: Date;
     content: string | null;
     fileLink: string | null;
     fileName: string | undefined;
@@ -50,6 +52,7 @@ const Dashboard = () => {
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [selectedConversationIdx, setSelectedConversationIdx] = useState<number | null>(null);
     const [selectedSettingIdx, setSelectedSettingIdx] = useState<number>(-1);
+    const [socket, setSocket] = useState<Socket | null>(null);
 
     const getAllConversations = async () => {
         try {
@@ -78,6 +81,16 @@ const Dashboard = () => {
 
     useEffect(() => {
         getAllConversations();
+        const socket = io(`${process.env.REACT_APP_SERVER_URL}`, {
+            withCredentials: true,
+        });
+
+        setSocket(socket);
+
+        return () => {
+            socket.close();
+            setSocket(null);
+        };
     }, []);
 
     useEffect(() => {
@@ -94,7 +107,37 @@ const Dashboard = () => {
         }
     }, [selectedSettingIdx, navigate]);
 
+    const handleIncomingMessage = useCallback((chatId: string, message: Message) => {
+        console.log(`Message received: ${message}, from chat: ${chatId}`);
+        setConversations((conversations) => {
+            return conversations.map((conversation) => {
+                if (conversation.id !== chatId) return conversation;
+
+                conversation.lastMessage = message.createdAt;
+                conversation.messages.push(message);
+
+                return conversation;
+            });
+        });
+    }, []);
+
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on("message:transfer", handleIncomingMessage);
+
+        return () => {
+            socket.off("message:transfer");
+        };
+    }, [socket, handleIncomingMessage]);
+
     if (!user) return <Navigate to="/login" replace />;
+
+    const reduceString = (str: string | undefined): string => {
+        if (!str) return "";
+        if (str.length < 20) return str;
+        return `${str.slice(0, 17)}...`;
+    };
 
     return (
         <main className="container dashboard">
@@ -132,13 +175,15 @@ const Dashboard = () => {
                                     {lastMessage && (
                                         <p>
                                             {lastMessage.senderName}:{" "}
-                                            {lastMessage.content ? (
-                                                lastMessage.content
-                                            ) : (
+                                            {lastMessage.fileLink && (
                                                 <>
                                                     <FontAwesomeIcon icon={faFile} />{" "}
-                                                    {lastMessage.fileName}
                                                 </>
+                                            )}
+                                            {reduceString(
+                                                lastMessage.content
+                                                    ? lastMessage.content
+                                                    : lastMessage.fileName
                                             )}
                                         </p>
                                     )}

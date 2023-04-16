@@ -51,7 +51,7 @@ const ChatSettings: React.FunctionComponent<IChatSettingsProps> = ({ conversatio
                     Participants
                 </div>
             </div>
-            <div className={`chat-settings__general ${participants ? "part" : "over"}`}>
+            <div className={`chat-settings__general ${participants ? "participants" : "overview"}`}>
                 {!participants ? (
                     <>
                         <div
