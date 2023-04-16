@@ -1,7 +1,12 @@
 import { NextFunction, Request, Response } from "express";
 import jwt from "jsonwebtoken";
 import { TOKEN_SECRET } from "../config/config";
-import { AuthenticatedUserRequest, AuthenticatedUserSocket } from "../types";
+import {
+    AdminAuthenticatedUserRequest,
+    AuthenticatedUserRequest,
+    AuthenticatedUserSocket,
+    MemberAuthenticatedRequest,
+} from "../types";
 import { prisma } from "../prisma";
 
 import { Socket } from "socket.io";
@@ -44,6 +49,33 @@ export const groupAdminAuthorization = async (_req: Request, res: Response, next
 
         if (!member || !member.admin)
             return res.status(403).json({ success: false, message: "Forbidden" });
+
+        (req as AdminAuthenticatedUserRequest).chatId = req.body.cid;
+
+        return next();
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+export const memberAuthorization = async (_req: Request, res: Response, next: NextFunction) => {
+    const req = _req as AuthenticatedUserRequest;
+
+    if (!req.body || !req.body.cid)
+        return res.status(400).json({ success: false, message: "Malformed Body" });
+
+    if (!req.userId) return res.status(403).json({ success: false, message: "Forbidden" });
+
+    try {
+        const member = await prisma.member.findUnique({
+            where: { uid_cid: { uid: req.userId, cid: req.body.cid } },
+            select: { cid: true },
+        });
+
+        if (!member) return res.status(403).json({ success: false, message: "Forbidden" });
+
+        (req as MemberAuthenticatedRequest).chatId = member.cid;
 
         return next();
     } catch (err) {

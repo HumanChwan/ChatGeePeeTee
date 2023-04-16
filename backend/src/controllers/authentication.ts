@@ -271,3 +271,25 @@ export const removeProfilePicture = async (_req: Request, res: Response) => {
         });
     }
 };
+
+export const getUserStatus = async (_req: Request, res: Response) => {
+    const req = _req as AuthenticatedUserRequest; 
+
+    if (!req.body || !req.query.uid || typeof req.query.uid !== "string")
+        return res.status(400).json({ success: false, message: "Malformed Body" });
+    
+    try {
+        const user = await prisma.user.findUnique({
+            where: { id: req.query.uid },
+            select: { online: true, lastOnline: true }
+        });
+
+        if (!user)
+            return res.status(403).json({ success: false, message: "Invalid id used for cookie" });
+
+        return res.status(200).json({ success: true, message: "Fetched status", ...user })
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal Server Error"})
+    }
+}

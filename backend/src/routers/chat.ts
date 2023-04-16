@@ -1,18 +1,25 @@
 import { Router } from "express";
-import { authorization, groupAdminAuthorization } from "../middlewares/authentication";
+import {
+    authorization,
+    groupAdminAuthorization,
+    memberAuthorization,
+} from "../middlewares/authentication";
 import {
     addGroupMember,
     createDM,
     createGroup,
+    deleteMessage,
     getChats,
     getMembers,
     leaveGroup,
     recordMessage,
     removeGroupMember,
     toggleAdminStatus,
-    updateGroup,
+    updateGroupName,
+    updateGroupMode,
     updateGroupPhoto,
 } from "../controllers/chat";
+import { chatResourceUpload } from "../multer";
 
 const router = Router();
 
@@ -25,14 +32,19 @@ router.get("/leave-group", leaveGroup);
 router.post("/create-dm", createDM);
 router.post("/create-group", createGroup);
 
-router.post("/message", recordMessage);
+// member authorized routes
+router.use(memberAuthorization);
+
+router.post("/message", chatResourceUpload.single("file"), recordMessage);
+router.post("/delete-message", deleteMessage);
 
 // Group Admin routes
 router.use(groupAdminAuthorization);
 
 router.post("/add-group-member", addGroupMember);
 
-router.post("/update-group", updateGroup);
+router.post("/update-group-name", updateGroupName);
+router.post("/update-group-mode", updateGroupMode);
 router.post("/update-group-picture", updateGroupPhoto);
 
 router.post("/remove-member", removeGroupMember);

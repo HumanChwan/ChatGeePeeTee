@@ -3,6 +3,7 @@ import { Router } from "express";
 import {
     checkUsername,
     getUser,
+    getUserStatus,
     login,
     logout,
     removeProfilePicture,
@@ -26,6 +27,8 @@ router.use(authorization);
 router.get("/get-user", getUser);
 router.post("/update-profile", updateProfile);
 router.post("/update-profile-picture", updateProfilePicture);
+
+router.get("/get-user-status", getUserStatus);
 
 router.post("/update-theme", updateTheme);
 

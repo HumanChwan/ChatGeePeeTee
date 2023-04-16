@@ -12,6 +12,8 @@ import chatRouter from "./routers/chat";
 
 import path from "path";
 import { socketAuthorization } from "./middlewares/authentication";
+import handleSocketConnection from "./socket";
+import { populateReqWithIO } from "./middlewares/io";
 
 const app: Express = express();
 const httpServer = createServer(app);
@@ -24,6 +26,7 @@ const io = new Server(httpServer, {
     cookie: true,
 });
 io.use(socketAuthorization);
+io.on("connection", handleSocketConnection(io))
 
 // ----------MIDDLEWARES-----------
 app.use(express.json());
@@ -36,6 +39,8 @@ app.use(
         credentials: true,
     })
 );
+//Kinda sus
+app.use(populateReqWithIO(io))
 
 app.use(express.static(path.join("public")));
 

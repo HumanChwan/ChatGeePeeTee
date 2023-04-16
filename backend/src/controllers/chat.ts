@@ -1,10 +1,21 @@
 import { Request, Response } from "express";
-import { AuthenticatedUserRequest, IOAuthenticatedUserRequest } from "../types";
+import {
+    AdminAuthenticatedUserRequest,
+    AuthenticatedUserRequest,
+    IOAuthenticatedUserRequest,
+    MemberAuthenticatedRequest,
+} from "../types";
 import { v4 as uuidv4 } from "uuid";
 import { prisma } from "../prisma";
 
 import { Member, Chat, Message } from "../types";
-import { DISAPPEARING_TIME, FILE_SCOPE, FORM_STATIC_URL, GET_PATH } from "../utils";
+import {
+    DISAPPEARING_TIME,
+    FILE_SCOPE,
+    FORM_STATIC_URL,
+    GET_PATH,
+    getChatFileName,
+} from "../utils";
 import { groupPictureUpload } from "../multer";
 
 import * as fs from "fs/promises";
@@ -57,24 +68,20 @@ export const getChats = async (_req: Request, res: Response) => {
     const req = _req as AuthenticatedUserRequest;
 
     try {
-        const memberChats = await prisma.member.findMany({
-            where: { uid: req.userId },
-            orderBy: { chat: { lastMessage: "desc" } },
+        const chatRecords = await prisma.chat.findMany({
+            where: { participants: { some: { uid: req.userId } } },
+            orderBy: { lastMessage: "desc" },
             select: {
-                chat: {
-                    select: {
-                        id: true,
-                        dm: true,
-                        name: true,
-                        picture: true,
-                        lastMessage: true,
-                        disappearingMode: true,
-                    },
-                },
+                id: true,
+                dm: true,
+                name: true,
+                picture: true,
+                lastMessage: true,
+                disappearingMode: true,
             },
         });
 
-        const promises: Promise<Chat>[] = memberChats.map(async ({ chat }) => {
+        const promises: Promise<Chat>[] = chatRecords.map(async (chat) => {
             const members = await getMembersOfGroup(chat.id);
 
             if (!members) {
@@ -242,8 +249,8 @@ export const createDM = async (_req: Request, res: Response) => {
             },
         });
 
-        const userOne = await createMember(req.userId, chat.id, true, true);
-        const userTwo = await createMember(username, chat.id, true);
+        const userOne = await createMember(req.userId, chat.id, false, true);
+        const userTwo = await createMember(username, chat.id, false);
 
         if (!userOne || !userTwo) {
             return res
@@ -356,18 +363,98 @@ export const createGroup = async (_req: Request, res: Response) => {
     }
 };
 
-export const recordMessage = async (_req: Request, res: Response) => {};
+export const recordMessage = async (_req: Request, res: Response) => {
+    const req = _req as MemberAuthenticatedRequest;
 
-export const addGroupMember = async (_req: Request, res: Response) => {
-    const req = _req as AuthenticatedUserRequest;
+    if (!req.body) return res.status(400).json({ success: false, message: "Malformed Body" });
 
-    if (!req.body.username || !req.body.cid)
+    try {
+        const chat = await prisma.chat.findUnique({
+            where: { id: req.chatId },
+            select: { disappearingMode: true },
+        });
+
+        const user = await prisma.user.findUnique({
+            where: { id: req.userId },
+            select: { username: true, picture: true },
+        });
+
+        if (!chat || !user)
+            return res.status(403).json({ success: false, message: "Invalid Chat or User" });
+
+        const messageObj = await prisma.message.create({
+            data: {
+                id: uuidv4(),
+                uid: req.userId,
+                cid: req.chatId,
+                disappearing: chat.disappearingMode,
+                content: req.body.content || null,
+                filePath: req.file?.filename || null,
+            },
+        });
+
+        const message: Message = {
+            id: messageObj.id,
+            userId: messageObj.uid,
+            content: messageObj.content,
+            fileLink: FORM_STATIC_URL(messageObj.filePath, FILE_SCOPE.CHAT_FILE),
+            fileName: messageObj.filePath ? getChatFileName(messageObj.filePath) : undefined,
+            senderName: user.username,
+            senderPicture: user.picture,
+            removed: false,
+        };
+
+        // TODO: Send to all in the room
+
+        return res
+            .status(200)
+            .json({ success: true, message: "Message Recorded!", userMessage: message });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+export const deleteMessage = async (_req: Request, res: Response) => {
+    const req = _req as MemberAuthenticatedRequest;
+
+    if (!req.body || !req.body.messageId)
         return res.status(400).json({ success: false, message: "Malformed Body" });
 
     try {
-        await createMember(req.body.username, req.body.cid, false);
+        const message = await prisma.message.findUnique({
+            where: { id: req.body.messageId },
+            select: { filePath: true, uid: true, cid: true },
+        });
 
-        const members = await getMembersOfGroup(req.body.cid);
+        if (!message || req.userId !== message.uid || req.chatId !== message.cid)
+            return res
+                .status(403)
+                .json({ success: false, message: "Not permitted to delete image" });
+
+        await prisma.message.delete({
+            where: { id: req.body.messageId },
+        });
+
+        // TODO: Send message to everyone in that chat that message with mid has been deleted
+
+        return res.status(200).json({ success: true, message: "Deleted message!" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+export const addGroupMember = async (_req: Request, res: Response) => {
+    const req = _req as AdminAuthenticatedUserRequest;
+
+    if (!req.body.username)
+        return res.status(400).json({ success: false, message: "Malformed Body" });
+
+    try {
+        await createMember(req.body.username, req.chatId, false);
+
+        const members = await getMembersOfGroup(req.chatId);
 
         if (!members) return res.status(403).json({ success: false, message: "Some random error" });
 
@@ -400,28 +487,78 @@ export const leaveGroup = async (_req: Request, res: Response) => {
     }
 };
 
-export const updateGroup = (_req: Request, res: Response) => {};
+export const updateGroupName = async (_req: Request, res: Response) => {
+    const req = _req as AdminAuthenticatedUserRequest;
+
+    if (!req.body) return res.status(400).json({ success: false, message: "Malformed Body" });
+
+    const { name } = req.body;
+
+    if (!name) return res.status(400).json({ success: false, message: "Malformed Body" });
+
+    try {
+        const chat = await prisma.chat.findUnique({
+            where: { id: req.chatId },
+            select: { dm: true },
+        });
+        if (!chat || chat.dm) return res.status(403).json({ success: false, message: "Forbidden" });
+
+        await prisma.chat.update({
+            where: { id: req.chatId },
+            data: { name },
+        });
+
+        // TODO: Socket send a message to everyone
+    } catch (err) {
+        console.error(err);
+    }
+};
+
+export const updateGroupMode = async (_req: Request, res: Response) => {
+    const req = _req as AdminAuthenticatedUserRequest;
+
+    if (!req.body) return res.status(400).json({ success: false, message: "Malformed Body" });
+
+    const { disappearingMode } = req.body;
+
+    if (!disappearingMode)
+        return res.status(400).json({ success: false, message: "Malformed Body" });
+
+    try {
+        const chat = await prisma.chat.findUnique({
+            where: { id: req.chatId },
+            select: { dm: true },
+        });
+        if (!chat || chat.dm) return res.status(403).json({ success: false, message: "Forbidden" });
+
+        await prisma.chat.update({
+            where: { id: req.chatId },
+            data: { disappearingMode },
+        });
+
+        // TODO: Socket send a message to everyone
+    } catch (err) {
+        console.error(err);
+    }
+};
 
 export const updateGroupPhoto = (_req: Request, res: Response) => {
     groupPictureUpload.single("profile_photo")(_req, res, async (err) => {
-        const req = _req as AuthenticatedUserRequest;
+        const req = _req as AdminAuthenticatedUserRequest;
         if (err || !req.file) {
             console.error(`[#] ${err}`);
             return res.status(403).json({ success: false, message: "Forbidden" });
         }
 
-        if (!req.body || !req.body.cid)
-            return res.status(400).json({ success: false, message: "Malformed Body" });
-
         try {
             const pictureObj = await prisma.chat.findUnique({
-                where: { id: req.body.cid },
+                where: { id: req.chatId },
                 select: { picture: true },
             });
             if (!pictureObj) return res.status(403).json({ success: false, message: "Forbidden" });
 
-            await prisma.user.update({
-                where: { id: req.userId },
+            await prisma.chat.update({
+                where: { id: req.chatId },
                 data: { picture: req.file.filename },
             });
 
@@ -452,9 +589,6 @@ export const updateGroupPhoto = (_req: Request, res: Response) => {
 
 export const removeGroupMember = async (_req: Request, res: Response) => {
     const req = _req as IOAuthenticatedUserRequest;
-
-    if (!req.body.uid || !req.body.cid)
-        return res.status(400).json({ success: false, message: "Malformed Body" });
 
     try {
         await prisma.member.update({

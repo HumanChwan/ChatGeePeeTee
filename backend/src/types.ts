@@ -2,7 +2,10 @@ import { Request } from "express";
 import { Server, Socket } from "socket.io";
 
 export type AuthenticatedUserRequest = Request & { userId: string };
+export type MemberAuthenticatedRequest = AuthenticatedUserRequest & { chatId: string };
+export type AdminAuthenticatedUserRequest = MemberAuthenticatedRequest;
 export type IOAuthenticatedUserRequest = AuthenticatedUserRequest & { io: Server };
+
 export type AuthenticatedUserSocket = Socket & { userId: string };
 
 export interface Member {

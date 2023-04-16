@@ -18,6 +18,8 @@ export const FORM_STATIC_URL = (localFilename: string | null, type: FILE_SCOPE) 
             return `${SERVER_URL}/images/profile/${localFilename}`;
         case FILE_SCOPE.GROUP_PROFILE:
             return `${SERVER_URL}/images/group-profile/${localFilename}`;
+        case FILE_SCOPE.CHAT_FILE:
+            return `${SERVER_URL}/chat/${localFilename}`;
         default:
             throw "Well that's embarrassing :(";
     }
@@ -26,6 +28,12 @@ export const FORM_STATIC_URL = (localFilename: string | null, type: FILE_SCOPE) 
 export const GET_PATH = {
     [FILE_SCOPE.PROFILE]: path.join("public", "images", "profile"),
     [FILE_SCOPE.GROUP_PROFILE]: path.join("public", "images", "group-profile"),
+    [FILE_SCOPE.CHAT_FILE]: path.join("public", "chat"),
+};
+
+export const getChatFileName = (filename: string) => {
+    // $$$$ acts as split filter, pretty sus lmaoo
+    return filename.split("$$$$-").pop();
 };
 
 export const serializeUser = (user: User) => {
