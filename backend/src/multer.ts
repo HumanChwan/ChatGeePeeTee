@@ -49,7 +49,7 @@ const chatResourceStorage = multer.diskStorage({
         const filename = file.originalname;
 
         // $$$$ acts as split filter, pretty sus lmaoo
-        cb(null, `${req.chatId}-${req.userId}-${randomSuffix}-$$$$-${filename}`);
+        cb(null, `${req.body.cid}-${req.userId}-${randomSuffix}-$$$$-${filename}`);
     },
 });
 export const chatResourceUpload = multer({ storage: chatResourceStorage });

@@ -33,9 +33,9 @@ router.post("/create-dm", createDM);
 router.post("/create-group", createGroup);
 
 // member authorized routes
-router.use(memberAuthorization);
-
 router.post("/message", chatResourceUpload.single("file"), recordMessage);
+
+router.use(memberAuthorization);
 router.post("/delete-message", deleteMessage);
 
 // Group Admin routes

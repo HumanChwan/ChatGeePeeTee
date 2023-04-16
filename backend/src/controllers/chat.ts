@@ -112,6 +112,7 @@ export const getChats = async (_req: Request, res: Response) => {
                     },
                     content: true,
                     filePath: true,
+                    createdAt: true,
                 },
             });
 
@@ -125,10 +126,11 @@ export const getChats = async (_req: Request, res: Response) => {
                     userId: message.user.id,
                     senderName: message.user.username,
                     senderPicture: message.user.picture,
+                    createdAt: message.createdAt,
                     removed: message.member.removed,
                     content: message.content,
-                    fileLink: message.filePath,
-                    fileName: message.filePath?.split("/").pop(),
+                    fileLink: FORM_STATIC_URL(message.filePath, FILE_SCOPE.CHAT_FILE),
+                    fileName: message.filePath ? getChatFileName(message.filePath) : undefined,
                 };
             });
 
@@ -366,7 +368,12 @@ export const createGroup = async (_req: Request, res: Response) => {
 export const recordMessage = async (_req: Request, res: Response) => {
     const req = _req as MemberAuthenticatedRequest;
 
-    if (!req.body) return res.status(400).json({ success: false, message: "Malformed Body" });
+    if (!req.body || !req.body.cid) {
+        if (req.file) await fs.unlink(req.file?.path);
+        return res.status(400).json({ success: false, message: "Malformed Body" });
+    }
+
+    req.chatId = req.body.cid;
 
     try {
         const chat = await prisma.chat.findUnique({
@@ -379,8 +386,10 @@ export const recordMessage = async (_req: Request, res: Response) => {
             select: { username: true, picture: true },
         });
 
-        if (!chat || !user)
+        if (!chat || !user) {
+            if (req.file) await fs.unlink(req.file?.path);
             return res.status(403).json({ success: false, message: "Invalid Chat or User" });
+        }
 
         const messageObj = await prisma.message.create({
             data: {
@@ -402,9 +411,12 @@ export const recordMessage = async (_req: Request, res: Response) => {
             senderName: user.username,
             senderPicture: user.picture,
             removed: false,
+            createdAt: messageObj.createdAt,
         };
 
         // TODO: Send to all in the room
+        const io = (_req as IOAuthenticatedUserRequest).io;
+        io.to(`chat-${req.chatId}`).emit("message:transfer", req.chatId, message);
 
         return res
             .status(200)

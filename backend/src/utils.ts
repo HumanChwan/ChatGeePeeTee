@@ -37,7 +37,7 @@ export const getChatFileName = (filename: string) => {
 };
 
 export const serializeUser = (user: User) => {
-    const { name, email, username, createdAt, picture, dark } = user;
+    const { name, email, username, createdAt, picture, dark, id } = user;
     return {
         name,
         email,
@@ -45,5 +45,6 @@ export const serializeUser = (user: User) => {
         createdAt,
         picture: FORM_STATIC_URL(picture, FILE_SCOPE.PROFILE),
         dark,
+        id
     };
 };

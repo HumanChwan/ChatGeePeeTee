@@ -20,6 +20,7 @@ export interface Message {
     senderName: string;
     senderPicture: string | null;
     removed: boolean;
+    createdAt: Date;
     content: string | null;
     fileLink: string | null;
     fileName: string | undefined;

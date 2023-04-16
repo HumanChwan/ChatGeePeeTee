@@ -26,11 +26,12 @@ const io = new Server(httpServer, {
     cookie: true,
 });
 io.use(socketAuthorization);
-io.on("connection", handleSocketConnection(io))
+io.on("connection", handleSocketConnection(io));
 
 // ----------MIDDLEWARES-----------
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+
 app.use(cookieParser());
 // CORS
 app.use(
@@ -40,7 +41,7 @@ app.use(
     })
 );
 //Kinda sus
-app.use(populateReqWithIO(io))
+app.use(populateReqWithIO(io));
 
 app.use(express.static(path.join("public")));
 
