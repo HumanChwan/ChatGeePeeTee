@@ -12,6 +12,7 @@
     }
 
     &__menu {
+        z-index: 1;
         border: 1px solid $primary;
         position: absolute;
 

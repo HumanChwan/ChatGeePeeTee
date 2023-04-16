@@ -10,15 +10,16 @@ import useDefaultImage from "../hooks/useDefaultImage";
 import { Navigate, useNavigate } from "react-router-dom";
 import Options from "../components/Options";
 import LogoutPrompt from "../components/LogoutPrompt";
+import Chat from "../components/Chat";
 
-interface Member {
+export interface Member {
     userId: string;
     username: string;
     picture: string | null;
     admin: boolean;
 }
 
-interface Message {
+export interface Message {
     id: string;
     userId: string;
     senderName: string;
@@ -37,6 +38,7 @@ export interface Conversation {
     name: string | null;
     picture: string | null;
     lastMessage: Date;
+    disappearingMode: Boolean;
 }
 
 const SETTINGS = ["Profile", "Logout"];
@@ -63,7 +65,8 @@ const Dashboard = () => {
                 return;
             }
 
-            setConversations(data.chats.map((chat: Conversation) => ({ ...chat, unread: false })));
+            const x = data.chats.map((chat: Conversation) => ({ ...chat, unread: false }));
+            setConversations(x);
         } catch (err) {
             console.error(err);
             pushErrorNotification({
@@ -168,7 +171,15 @@ const Dashboard = () => {
                     </div>
                 </div>
             </section>
-            <section className="dashboard__chat"></section>
+            <section className="dashboard__chat">
+                <Chat
+                    conversation={
+                        selectedConversationIdx !== null
+                            ? conversations[selectedConversationIdx]
+                            : null
+                    }
+                />
+            </section>
         </main>
     );
 };
