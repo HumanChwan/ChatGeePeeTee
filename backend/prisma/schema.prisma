@@ -59,8 +59,8 @@ model Message {
   createdAt    DateTime @default(now()) @map("created_at")
   uid          String   @db.VarChar(100)
   cid          String   @db.VarChar(100)
-  content      String?  @db.VarChar(100)
-  filePath     String?  @db.VarChar(100)
+  content      String?  @db.VarChar(1000)
+  filePath     String?  @db.VarChar(1000)
   disappearing Boolean
 
   member Member @relation(fields: [uid, cid], references: [uid, cid])
