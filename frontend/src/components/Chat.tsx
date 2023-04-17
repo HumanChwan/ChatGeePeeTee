@@ -62,6 +62,12 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
             });
     }, [user, conversation]);
 
+    useEffect(() => {
+        if (!conversation) return;
+
+        if (!goDown) scrollToBottom();
+    }, [conversation, goDown]);
+
     const scrollToBottom = () => {
         if (!messagesRef.current) return;
 
@@ -85,9 +91,9 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
     const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const form = new FormData();
-        if (file) form.append("file", file);
         form.append("cid", conversation.id);
-        form.append("content", messageContent);
+        if (messageContent) form.append("content", messageContent);
+        if (file) form.append("file", file);
 
         try {
             const { data } = await axios.post(

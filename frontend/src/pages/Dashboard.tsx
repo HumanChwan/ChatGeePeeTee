@@ -111,12 +111,12 @@ const Dashboard = () => {
         console.log(`Message received: ${message}, from chat: ${chatId}`);
         setConversations((conversations) => {
             return conversations.map((conversation) => {
-                if (conversation.id !== chatId) return conversation;
+                if (conversation.id !== chatId) return { ...conversation };
 
                 conversation.lastMessage = message.createdAt;
                 conversation.messages.push(message);
 
-                return conversation;
+                return { ...conversation };
             });
         });
     }, []);
