@@ -175,7 +175,6 @@ interface SerialisedMember {
     userId: string;
     username: string;
     picture: string | null;
-    socketId: string;
 }
 const createMember = async (
     userIdentification: string,
@@ -203,12 +202,10 @@ const createMember = async (
             update: { removed: false },
         });
 
-        // TODO: add socket id instead garbage
         return {
             userId: user.id,
             username: user.username,
             picture: user.picture,
-            socketId: "socket-id",
         };
     } catch (err) {
         return null;
@@ -260,6 +257,11 @@ export const createDM = async (_req: Request, res: Response) => {
                 .json({ success: false, message: "User with that Id doesn't exist" });
         }
 
+        const io = (_req as IOAuthenticatedUserRequest).io;
+
+        io.in(`user-${userOne.userId}`).socketsJoin(`chat-${chat.id}`);
+        io.in(`user-${userTwo.userId}`).socketsJoin(`chat-${chat.id}`);
+
         const chatForOne: Chat = {
             id: chat.id,
             dm: true,
@@ -286,6 +288,8 @@ export const createDM = async (_req: Request, res: Response) => {
             name: userOne.username,
             picture: userOne.picture,
         };
+
+        io.to(`user-${userTwo.userId}`).emit("group:join", chatForTwo);
 
         return res.status(200).json({ success: true, message: "Create new DM", chat: chatForOne });
     } catch (err) {
@@ -335,6 +339,14 @@ export const createGroup = async (_req: Request, res: Response) => {
                 .json({ success: false, message: "User with that Id doesn't exist" });
         }
 
+        const io = (_req as IOAuthenticatedUserRequest).io;
+
+        serialisedMembers.forEach((member) => {
+            if (!member) return;
+
+            io.to(`user-${member.userId}`).socketsJoin(`chat-${chat.id}`);
+        });
+
         const serialisedChat: Chat = {
             id: chat.id,
             dm: false,
@@ -351,15 +363,9 @@ export const createGroup = async (_req: Request, res: Response) => {
             })),
         };
 
-        serialisedMembers.forEach((member) => {
-            // TODO: socket send to the all the other USERs
-            // Send `serialisedChat` to every member
-            // Use member here to send through socket
-        });
+        io.to(`chat-${chat.id}`).emit("group:join", serialisedChat);
 
-        return res
-            .status(200)
-            .json({ success: true, message: "Create new DM", chat: serialisedChat });
+        return res.status(200).json({ success: true, message: "Create new Group" });
     } catch (err) {
         return res.status(500).json({ success: false, message: "Internal Server Error" });
     }
@@ -547,8 +553,9 @@ export const updateGroupMode = async (_req: Request, res: Response) => {
             where: { id: req.chatId },
             data: { disappearingMode },
         });
-
+        const io = (_req as IOAuthenticatedUserRequest).io
         // TODO: Socket send a message to everyone
+        io.to(`chat-${req.chatId}`).emit('group:mode', disappearingMode)
     } catch (err) {
         console.error(err);
     }
@@ -585,12 +592,14 @@ export const updateGroupPhoto = (_req: Request, res: Response) => {
                 );
             }
 
-            // TODOO: Send update to all group members
+            const IMAGE_URL = FORM_STATIC_URL(req.file.filename, FILE_SCOPE.GROUP_PROFILE);
+            const io = (_req as IOAuthenticatedUserRequest).io;
+            io.to(`chat-${req.chatId}`).emit("group:picture_change", IMAGE_URL);
 
             return res.status(200).json({
                 success: true,
                 message: "Updated successfully!",
-                image: FORM_STATIC_URL(req.file.filename, FILE_SCOPE.GROUP_PROFILE),
+                image: IMAGE_URL,
             });
         } catch (err) {
             console.error(`[#] ${err}`);

@@ -45,6 +45,6 @@ export const serializeUser = (user: User) => {
         createdAt,
         picture: FORM_STATIC_URL(picture, FILE_SCOPE.PROFILE),
         dark,
-        id
+        id,
     };
 };

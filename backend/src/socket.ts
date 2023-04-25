@@ -14,6 +14,8 @@ const handleSocketConnection = (io: Server) => async (_socket: Socket) => {
     chats.forEach(({ id }) => {
         socket.join(`chat-${id}`);
     });
+
+    socket.join(`user-${socket.userId}`);
 };
 
 export default handleSocketConnection;
