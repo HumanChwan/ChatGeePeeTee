@@ -14,7 +14,7 @@ const profilePictureStorage = multer.diskStorage({
         const req = _req as AuthenticatedUserRequest;
         const randomSuffix = Date.now() + Math.floor(Math.random() * 1e9);
 
-        const filename = file.originalname;
+        const filename = file.originalname.replace(/[ #<>":/\|?*]/g, '_');
 
         cb(null, `${req.userId}-${randomSuffix}.${filename.split(".").pop()}`);
     },
@@ -30,7 +30,7 @@ const groupPictureStorage = multer.diskStorage({
 
         const randomSuffix = Date.now() + Math.floor(Math.random() * 1e9);
 
-        const filename = file.originalname;
+        const filename = file.originalname.replace(/[ #<>":/\|?*]/g, '_');
 
         cb(null, `${req.chatId}-${randomSuffix}.${filename.split(".").pop()}`);
     },
@@ -46,7 +46,7 @@ const chatResourceStorage = multer.diskStorage({
 
         const randomSuffix = Date.now() + Math.floor(Math.random() * 1e9);
 
-        const filename = file.originalname;
+        const filename = file.originalname.replace(/[ #<>":/\|?*]/g, '_');
 
         // $$$$ acts as split filter, pretty sus lmaoo
         cb(null, `${req.body.cid}-${req.userId}-${randomSuffix}-$$$$-${filename}`);
