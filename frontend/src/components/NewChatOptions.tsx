@@ -21,11 +21,7 @@ const NewChatOptions: React.FunctionComponent<INewChatOptions> = ({ setConversat
                 setIdx={setSelectedIdx}
                 setConversation={setConversations}
             />
-            <CreateGroupModal
-                isOpen={selectedIdx === 1}
-                setIdx={setSelectedIdx}
-                setConversation={setConversations}
-            />
+            <CreateGroupModal isOpen={selectedIdx === 1} setIdx={setSelectedIdx} />
             <Options
                 options={OPTIONS.map((x) => ({ name: x }))}
                 setOptionSelectedIdx={setSelectedIdx}

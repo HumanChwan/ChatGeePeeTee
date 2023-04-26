@@ -110,10 +110,11 @@ const Dashboard = () => {
     const handleIncomingMessage = useCallback((chatId: string, message: Message) => {
         console.log(`Message received: ${message}, from chat: ${chatId}`);
         setConversations((conversations) => {
-            return conversations.map((conversation) => {
+            return conversations.map((conversation, idx) => {
                 if (conversation.id !== chatId) return { ...conversation };
 
                 conversation.lastMessage = message.createdAt;
+                console.log(`In here: ${conversation}, ${idx}`);
                 conversation.messages.push(message);
 
                 return { ...conversation };
@@ -121,13 +122,21 @@ const Dashboard = () => {
         });
     }, []);
 
+    const handleNewConversation = useCallback((conversation: Conversation) => {
+        setConversations((conversations) => {
+            return conversations.concat(conversation);
+        });
+    }, []);
+
     useEffect(() => {
         if (!socket) return;
 
         socket.on("message:transfer", handleIncomingMessage);
+        socket.on("group:join", handleNewConversation);
 
         return () => {
             socket.off("message:transfer");
+            socket.off("group:join");
         };
     }, [socket, handleIncomingMessage]);
 

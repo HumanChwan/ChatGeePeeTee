@@ -13,6 +13,7 @@ import axios from "axios";
 import { useAuth } from "../contexts/AuthContext";
 import ChatSettings from "./ChatSettings";
 import { pushErrorNotification } from "./Notifications";
+import AudioRecorder from "./AudioRecorder";
 
 interface IChatProps {
     conversation: Conversation | null;
@@ -20,12 +21,15 @@ interface IChatProps {
 
 const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
     const { user } = useAuth()!;
+    const [firstTime, setFirstTime] = useState<boolean>(true);
     const defaultImage = useDefaultImage();
     const [messageContent, setMessageContent] = useState<string>("");
     const [file, setFile] = useState<File | null>(null);
     const [online, setOnline] = useState<boolean>(false);
 
     const [openSettings, setOpenSettings] = useState<boolean>(false);
+
+    const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
     const fileInputRef = useRef<HTMLInputElement>(null);
     const messagesRef = useRef<HTMLDivElement>(null);
@@ -65,18 +69,28 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
     useEffect(() => {
         if (!conversation) return;
 
-        if (!goDown) scrollToBottom();
-    }, [conversation, goDown]);
+        if (!goDown) {
+            scrollToBottom(firstTime ? "auto" : "smooth");
+            setFirstTime(false);
+        }
+    }, [conversation, goDown, firstTime]);
 
-    const scrollToBottom = () => {
+    useEffect(() => {
+        setFirstTime(true);
+    }, [conversation?.id]);
+
+    useEffect(() => {
+        if (audioBlob) setFile(new File([audioBlob], `audio-recording-${new Date()}.webm`));
+    }, [audioBlob]);
+
+    const scrollToBottom = (motion: "auto" | "smooth" = "smooth") => {
         if (!messagesRef.current) return;
 
         messagesRef.current.scrollTo({
             top: messagesRef.current.scrollHeight,
             left: 0,
-            behavior: "smooth",
+            behavior: motion,
         });
-
         setGoDown(false);
     };
 
@@ -90,6 +104,11 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
 
     const handleMessageSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
+
+        let someValue = !!messageContent || !!file;
+
+        if (!someValue) return;
+
         const form = new FormData();
         form.append("cid", conversation.id);
         if (messageContent) form.append("content", messageContent);
@@ -132,6 +151,7 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (!e.target.files || e.target.files.length === 0) {
             setFile(null);
+            if (fileInputRef.current) fileInputRef.current.value = "";
             return;
         }
 
@@ -211,14 +231,14 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
                     );
                 })}
                 {goDown && (
-                    <div className="chat__messages__go-down" onClick={scrollToBottom}>
+                    <div className="chat__messages__go-down" onClick={() => scrollToBottom()}>
                         <FontAwesomeIcon icon={faArrowDown} />
                     </div>
                 )}
             </div>
             <form className="chat__box" onSubmit={handleMessageSubmit}>
                 {file && (
-                    <div className="chat__box_file">
+                    <div className="chat__box_file" title={file.name}>
                         <FontAwesomeIcon icon={faFile} />
                         <span>{reduceFileName(file.name)}</span>
                         <FontAwesomeIcon
@@ -249,10 +269,14 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
                         setMessageContent(e.target.value);
                     }}
                 />
-                <label className="send-input">
-                    <FontAwesomeIcon icon={faPaperPlane} />
-                    <input type="submit" style={{ display: "none" }} />
-                </label>
+                {!!messageContent || !!file ? (
+                    <label className="send-input">
+                        <FontAwesomeIcon icon={faPaperPlane} />
+                        <input type="submit" style={{ display: "none" }} />
+                    </label>
+                ) : (
+                    <AudioRecorder setAudioBlob={setAudioBlob} />
+                )}
             </form>
         </div>
     );

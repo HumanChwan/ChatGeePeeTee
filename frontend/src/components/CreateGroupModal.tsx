@@ -10,7 +10,6 @@ import { useAuth } from "../contexts/AuthContext";
 interface ICreateDMModal {
     isOpen: boolean;
     setIdx: (x: number) => void;
-    setConversation: (x: Conversation[] | ((x: Conversation[]) => Conversation[])) => void;
 }
 
 interface AddableMember {
@@ -18,11 +17,7 @@ interface AddableMember {
     admin: boolean;
 }
 
-const CreateGroupModal: React.FunctionComponent<ICreateDMModal> = ({
-    isOpen,
-    setIdx,
-    setConversation,
-}) => {
+const CreateGroupModal: React.FunctionComponent<ICreateDMModal> = ({ isOpen, setIdx }) => {
     const { user } = useAuth()!;
 
     const [groupName, setGroupName] = useState<string>("");
@@ -48,8 +43,6 @@ const CreateGroupModal: React.FunctionComponent<ICreateDMModal> = ({
                 });
                 return;
             }
-
-            setConversation((conversations) => [data.chat, ...conversations]);
 
             setIdx(-1);
         } catch (err) {

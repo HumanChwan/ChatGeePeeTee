@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Conversation } from "../pages/Dashboard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleInfo, faUsers } from "@fortawesome/free-solid-svg-icons";
+import { faCircleInfo, faPencil, faUsers } from "@fortawesome/free-solid-svg-icons";
 import useDefaultImage from "../hooks/useDefaultImage";
 
 interface IChatSettingsProps {
@@ -11,6 +11,7 @@ interface IChatSettingsProps {
 
 const ChatSettings: React.FunctionComponent<IChatSettingsProps> = ({ conversation, setOpen }) => {
     const [participants, setParticipants] = useState<boolean>(false);
+    const [overviewPicHover, setOverviewPicHover] = useState<boolean>(false);
     const divRef = useRef<HTMLDivElement>(null);
 
     const defaultImage = useDefaultImage();
@@ -59,8 +60,28 @@ const ChatSettings: React.FunctionComponent<IChatSettingsProps> = ({ conversatio
                                 backgroundImage: `url(${conversation.picture || defaultImage})`,
                             }}
                             className="picture"
-                        ></div>
+                            onMouseOver={() => setOverviewPicHover(true)}
+                            onMouseOut={() => setOverviewPicHover(false)}
+                        >
+                            {overviewPicHover && (
+                                <div className="picture-hov">
+                                    <FontAwesomeIcon icon={faPencil} />
+                                </div>
+                            )}
+                        </div>
                         <div className="name">{conversation.name}</div>
+                        <label htmlFor="export-to-txt">
+                            <span>Export chat to a Text file</span>
+                            <button className="btn ett" id="export-to-txt">
+                                Export to text
+                            </button>
+                        </label>
+                        <label htmlFor="leave-group">
+                            <span>Danger Zone</span>
+                            <button className="btn leave-group" id="leave-group">
+                                Leave Group
+                            </button>
+                        </label>
                     </>
                 ) : (
                     <></>
