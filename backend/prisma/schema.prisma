@@ -19,7 +19,7 @@ model User {
   password      String   @db.VarChar(100)
   picture       String?  @db.VarChar(100)
   online        Boolean
-  devicesOnline Int
+  devicesOnline Int      @map("devices_online")
   dark          Boolean
   lastOnline    DateTime @map("last_online")
 
@@ -45,7 +45,7 @@ model Member {
   cid      String   @db.VarChar(100)
   admin    Boolean
   removed  Boolean
-  lastSeen DateTime
+  lastSeen DateTime @map("last_seen")
 
   messages Message[]
 

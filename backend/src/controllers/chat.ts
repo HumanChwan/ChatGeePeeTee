@@ -553,9 +553,9 @@ export const updateGroupMode = async (_req: Request, res: Response) => {
             where: { id: req.chatId },
             data: { disappearingMode },
         });
-        const io = (_req as IOAuthenticatedUserRequest).io
+        const io = (_req as IOAuthenticatedUserRequest).io;
         // TODO: Socket send a message to everyone
-        io.to(`chat-${req.chatId}`).emit('group:mode', disappearingMode)
+        io.to(`chat-${req.chatId}`).emit("group:mode", disappearingMode);
     } catch (err) {
         console.error(err);
     }
