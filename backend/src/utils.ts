@@ -1,5 +1,5 @@
 import { User } from "@prisma/client";
-import { SERVER_URL } from "./config/config";
+import { HOST, LOCAL_NETWORK_CLIENT_URL, SERVER_URL } from "./config/config";
 import path from "path";
 
 /// 5 hours in milliseconds
@@ -9,17 +9,20 @@ export enum FILE_SCOPE {
     PROFILE,
     GROUP_PROFILE,
     CHAT_FILE,
+    TEMP,
 }
 export const FORM_STATIC_URL = (localFilename: string | null, type: FILE_SCOPE) => {
     if (!localFilename) return null;
 
+    const server_url = HOST === "0.0.0.0" ? LOCAL_NETWORK_CLIENT_URL : SERVER_URL
+
     switch (type) {
         case FILE_SCOPE.PROFILE:
-            return `${SERVER_URL}/images/profile/${localFilename}`;
+            return `${server_url}/images/profile/${localFilename}`;
         case FILE_SCOPE.GROUP_PROFILE:
-            return `${SERVER_URL}/images/group-profile/${localFilename}`;
+            return `${server_url}/images/group-profile/${localFilename}`;
         case FILE_SCOPE.CHAT_FILE:
-            return `${SERVER_URL}/chat/${localFilename}`;
+            return `${server_url}/chat/${localFilename}`;
         default:
             throw "Well that's embarrassing :(";
     }
@@ -29,6 +32,7 @@ export const GET_PATH = {
     [FILE_SCOPE.PROFILE]: path.join("public", "images", "profile"),
     [FILE_SCOPE.GROUP_PROFILE]: path.join("public", "images", "group-profile"),
     [FILE_SCOPE.CHAT_FILE]: path.join("public", "chat"),
+    [FILE_SCOPE.TEMP]: path.join("tmp"),
 };
 
 export const getChatFileName = (filename: string) => {

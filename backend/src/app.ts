@@ -5,7 +5,7 @@ import { createServer } from "http";
 import cookieParser from "cookie-parser";
 import cors from "cors";
 
-import { CLIENT_URL } from "./config/config";
+import { CLIENT_URL, LOCAL_NETWORK_CLIENT_URL } from "./config/config";
 
 import authenticationRouter from "./routers/authentication";
 import chatRouter from "./routers/chat";
@@ -20,7 +20,7 @@ const httpServer = createServer(app);
 
 const io = new Server(httpServer, {
     cors: {
-        origin: CLIENT_URL,
+        origin: [CLIENT_URL, LOCAL_NETWORK_CLIENT_URL],
         credentials: true,
     },
     cookie: true,
@@ -36,7 +36,7 @@ app.use(cookieParser());
 // CORS
 app.use(
     cors({
-        origin: CLIENT_URL,
+        origin: [CLIENT_URL, LOCAL_NETWORK_CLIENT_URL],
         credentials: true,
     })
 );

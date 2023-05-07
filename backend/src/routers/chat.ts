@@ -18,6 +18,7 @@ import {
     updateGroupName,
     updateGroupMode,
     updateGroupPhoto,
+    downloadChat,
 } from "../controllers/chat";
 import { chatResourceUpload } from "../multer";
 
@@ -37,6 +38,7 @@ router.post("/message", chatResourceUpload.single("file"), recordMessage);
 
 router.use(memberAuthorization);
 router.post("/delete-message", deleteMessage);
+router.post("/download-chat", downloadChat);
 
 // Group Admin routes
 router.use(groupAdminAuthorization);

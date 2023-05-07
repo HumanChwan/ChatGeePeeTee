@@ -198,6 +198,7 @@ const createMember = async (
                 cid: chatId,
                 removed: false,
                 admin,
+                lastSeen: new Date(0)
             },
             update: { removed: false },
         });
@@ -457,6 +458,47 @@ export const deleteMessage = async (_req: Request, res: Response) => {
         // TODO: Send message to everyone in that chat that message with mid has been deleted
 
         return res.status(200).json({ success: true, message: "Deleted message!" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).json({ success: false, message: "Internal Server Error" });
+    }
+};
+
+export const downloadChat = async (_req: Request, res: Response) => {
+    const req = _req as MemberAuthenticatedRequest;
+
+    try {
+        await updateMessageTable(req.chatId);
+        const messages = await prisma.message.findMany({
+            where: { cid: req.chatId },
+            orderBy: { createdAt: "asc" },
+            select: {
+                content: true,
+                createdAt: true,
+                user: { select: { username: true } },
+            },
+        });
+
+        const content = messages
+            .map((message) => {
+                return `[${message.createdAt.toLocaleString()}] ${message.user.username}: ${
+                    message.content ? message.content : "<File Sent>"
+                }`;
+            })
+            .join("\n");
+
+        const pathname = path.join(
+            GET_PATH[FILE_SCOPE.TEMP],
+            `chat-messages-${req.chatId}-${Math.floor(Math.random() * 1e9)}.txt`
+        );
+
+        await fs.writeFile(pathname, content);
+
+        setTimeout(async () => {
+            await fs.unlink(pathname);
+        }, 5 * 60 * 1000); // 5 minutes
+
+        return res.download(pathname);
     } catch (err) {
         console.error(err);
         return res.status(500).json({ success: false, message: "Internal Server Error" });
