@@ -41,7 +41,7 @@ export const signup = async (req: Request, res: Response) => {
                 online: false,
                 lastOnline: new Date(),
                 dark: theme,
-                devicesOnline: 0
+                devicesOnline: 0,
             },
         });
 

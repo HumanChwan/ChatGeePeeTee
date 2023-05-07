@@ -35,6 +35,7 @@ router.post("/create-group", createGroup);
 
 // member authorized routes
 router.post("/message", chatResourceUpload.single("file"), recordMessage);
+router.post("/update-group-picture", updateGroupPhoto);
 
 router.use(memberAuthorization);
 router.post("/delete-message", deleteMessage);
@@ -47,7 +48,6 @@ router.post("/add-group-member", addGroupMember);
 
 router.post("/update-group-name", updateGroupName);
 router.post("/update-group-mode", updateGroupMode);
-router.post("/update-group-picture", updateGroupPhoto);
 
 router.post("/remove-member", removeGroupMember);
 router.post("/toggle-admin-status", toggleAdminStatus);

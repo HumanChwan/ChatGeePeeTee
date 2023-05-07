@@ -38,12 +38,14 @@ const getMembersOfGroup = async (cid: string): Promise<Member[] | null> => {
 
     if (!members) return null;
 
-    return members.map((member) => ({
-        userId: member.user.id,
-        username: member.user.username,
-        picture: member.user.picture,
-        admin: member.admin,
-    }));
+    return members
+        .map((member) => ({
+            userId: member.user.id,
+            username: member.user.username,
+            picture: member.user.picture,
+            admin: member.admin,
+        }))
+        .sort((a, b) => Number(b.admin) - Number(a.admin));
 };
 
 // Function to remove messages which are marked disappearing and
@@ -198,7 +200,7 @@ const createMember = async (
                 cid: chatId,
                 removed: false,
                 admin,
-                lastSeen: new Date(0)
+                lastSeen: new Date(0),
             },
             update: { removed: false },
         });
@@ -581,7 +583,7 @@ export const updateGroupMode = async (_req: Request, res: Response) => {
 
     const { disappearingMode } = req.body;
 
-    if (!disappearingMode)
+    if (disappearingMode === undefined)
         return res.status(400).json({ success: false, message: "Malformed Body" });
 
     try {
@@ -598,17 +600,49 @@ export const updateGroupMode = async (_req: Request, res: Response) => {
         const io = (_req as IOAuthenticatedUserRequest).io;
         // TODO: Socket send a message to everyone
         io.to(`chat-${req.chatId}`).emit("group:mode", disappearingMode);
+
+        return res.status(200).json({ success: true, message: "Updated mode" });
     } catch (err) {
         console.error(err);
     }
 };
 
 export const updateGroupPhoto = (_req: Request, res: Response) => {
-    groupPictureUpload.single("profile_photo")(_req, res, async (err) => {
+    groupPictureUpload.single("group_photo")(_req, res, async (err) => {
+        if (err || !_req.file) {
+            console.error(`[#] ${err}`);
+            return res.status(403).json({ success: false, message: "Forbidden" });
+        }
+
+        console.log(_req.file);
+
+        if (!_req.body.cid) {
+            try {
+                await fs.unlink(path.join(GET_PATH[FILE_SCOPE.GROUP_PROFILE], _req.file.filename));
+            } catch (err) {
+                console.error(err);
+            }
+            return res.status(400).json({ success: false, message: "Malformed Body" });
+        }
+
         const req = _req as AdminAuthenticatedUserRequest;
+        req.chatId = _req.body.cid;
+
         if (err || !req.file) {
             console.error(`[#] ${err}`);
             return res.status(403).json({ success: false, message: "Forbidden" });
+        }
+
+        try {
+            const user = await prisma.member.findUnique({
+                where: { uid_cid: { uid: req.userId, cid: req.chatId } },
+                select: { admin: true },
+            });
+            if (!user || !user.admin) {
+                return res.status(403).json({ success: false, message: "Permission Denied" });
+            }
+        } catch (err) {
+            return res.status(403).json({ success: false, message: "Permission Denied" });
         }
 
         try {
@@ -618,9 +652,10 @@ export const updateGroupPhoto = (_req: Request, res: Response) => {
             });
             if (!pictureObj) return res.status(403).json({ success: false, message: "Forbidden" });
 
+            const IMAGE_URL = FORM_STATIC_URL(req.file.filename, FILE_SCOPE.GROUP_PROFILE);
             await prisma.chat.update({
                 where: { id: req.chatId },
-                data: { picture: req.file.filename },
+                data: { picture: IMAGE_URL },
             });
 
             try {
@@ -629,12 +664,9 @@ export const updateGroupPhoto = (_req: Request, res: Response) => {
                         path.join(GET_PATH[FILE_SCOPE.GROUP_PROFILE], pictureObj.picture)
                     );
             } catch (err) {
-                console.error(
-                    `Coulndn't find "${pictureObj.picture}" in profile images directory!`
-                );
+                console.error(`Couldn't find "${pictureObj.picture}" in profile images directory!`);
             }
 
-            const IMAGE_URL = FORM_STATIC_URL(req.file.filename, FILE_SCOPE.GROUP_PROFILE);
             const io = (_req as IOAuthenticatedUserRequest).io;
             io.to(`chat-${req.chatId}`).emit("group:picture_change", IMAGE_URL);
 

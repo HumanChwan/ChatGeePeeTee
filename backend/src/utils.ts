@@ -1,5 +1,5 @@
 import { User } from "@prisma/client";
-import { HOST, LOCAL_NETWORK_CLIENT_URL, SERVER_URL } from "./config/config";
+import { HOST, LOCAL_NETWORK_SERVER_URL, SERVER_URL } from "./config/config";
 import path from "path";
 
 /// 5 hours in milliseconds
@@ -14,7 +14,7 @@ export enum FILE_SCOPE {
 export const FORM_STATIC_URL = (localFilename: string | null, type: FILE_SCOPE) => {
     if (!localFilename) return null;
 
-    const server_url = HOST === "0.0.0.0" ? LOCAL_NETWORK_CLIENT_URL : SERVER_URL
+    const server_url = HOST === "0.0.0.0" ? LOCAL_NETWORK_SERVER_URL : SERVER_URL;
 
     switch (type) {
         case FILE_SCOPE.PROFILE:

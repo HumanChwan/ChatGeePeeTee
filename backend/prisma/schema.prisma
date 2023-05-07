@@ -17,7 +17,7 @@ model User {
   name          String   @db.VarChar(100)
   createdAt     DateTime @default(now()) @map("created_at")
   password      String   @db.VarChar(100)
-  picture       String?  @db.VarChar(100)
+  picture       String?  @db.VarChar(400)
   online        Boolean
   devicesOnline Int      @map("devices_online")
   dark          Boolean
@@ -31,7 +31,7 @@ model Chat {
   id               String   @id @db.VarChar(100)
   dm               Boolean
   name             String?  @db.VarChar(100)
-  picture          String?  @db.VarChar(100)
+  picture          String?  @db.VarChar(400)
   createdAt        DateTime @default(now()) @map("created_at")
   lastMessage      DateTime
   disappearingMode Boolean  @map("disappearing_mode")

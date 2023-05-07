@@ -26,13 +26,11 @@ const groupPictureStorage = multer.diskStorage({
         cb(null, GET_PATH[FILE_SCOPE.GROUP_PROFILE]);
     },
     filename: (_req, file, cb) => {
-        const req = _req as AdminAuthenticatedUserRequest;
-
         const randomSuffix = Date.now() + Math.floor(Math.random() * 1e9);
 
         const filename = file.originalname.replace(/[ #<>":/\|?*]/g, "_");
 
-        cb(null, `${req.chatId}-${randomSuffix}.${filename.split(".").pop()}`);
+        cb(null, `${_req.body.cid}-${randomSuffix}.${filename.split(".").pop()}`);
     },
 });
 export const groupPictureUpload = multer({ storage: groupPictureStorage });
