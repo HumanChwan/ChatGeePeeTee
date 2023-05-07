@@ -48,7 +48,7 @@ const ChatSettings: React.FunctionComponent<IChatSettingsProps> = ({
         if (!member) return;
 
         setAdmin(member.admin);
-    }, [conversation]);
+    }, [conversation, user?.id]);
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
         console.log("test");

@@ -110,13 +110,15 @@ const Dashboard = () => {
     }, [selectedSettingIdx, navigate]);
 
     const handleIncomingMessage = useCallback((chatId: string, message: Message) => {
-        console.log(`Message received: ${message}, from chat: ${chatId}`);
         setConversations((conversations) => {
-            return conversations.map((conversation, idx) => {
-                if (conversation.id !== chatId) return { ...conversation };
+            return conversations.map((conversation) => {
+                if (
+                    conversation.id !== chatId ||
+                    conversation.messages.some((m) => m.id === message.id)
+                )
+                    return { ...conversation };
 
                 conversation.lastMessage = message.createdAt;
-                console.log(`In here: ${conversation}, ${idx}`);
                 conversation.messages.push(message);
 
                 return { ...conversation };
