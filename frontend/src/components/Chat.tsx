@@ -18,6 +18,7 @@ import { Socket } from "socket.io-client";
 
 interface IChatProps {
     conversation: Conversation | null;
+    setConversation: (x: Conversation) => void;
     socket: Socket | null;
 }
 
@@ -27,7 +28,7 @@ type StatusPayload = {
     lastOnline: Date;
 };
 
-const Chat: React.FunctionComponent<IChatProps> = ({ conversation, socket }) => {
+const Chat: React.FunctionComponent<IChatProps> = ({ conversation, socket, setConversation }) => {
     const { user } = useAuth()!;
     const [firstTime, setFirstTime] = useState<boolean>(true);
     const defaultImage = useDefaultImage();
@@ -223,8 +224,13 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation, socket }) => 
                         </div>
                     )}
                 </div>
-                {!conversation.dm && openSettings && (
-                    <ChatSettings conversation={conversation} setOpen={setOpenSettings} />
+                {!conversation.dm && (
+                    <ChatSettings
+                        conversation={conversation}
+                        setOpen={setOpenSettings}
+                        setConversation={setConversation}
+                        open={openSettings}
+                    />
                 )}
             </div>
             <div className="chat__messages" ref={messagesRef} onScroll={handleScroll}>

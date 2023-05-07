@@ -233,6 +233,12 @@ const Dashboard = () => {
                             : null
                     }
                     socket={socket}
+                    setConversation={(conv: Conversation) => {
+                        const newConversations = conversations.map((c, idx) => {
+                            return idx === selectedConversationIdx ? conv : c;
+                        });
+                        setConversations(newConversations);
+                    }}
                 />
             </section>
         </main>

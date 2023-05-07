@@ -272,6 +272,8 @@
 
     height: 30rem;
 
+    cursor: auto;
+
     &__menu {
         height: 100%;
         flex: 0 0 20%;
@@ -285,6 +287,7 @@
         font-size: 1.125rem;
 
         &_opt {
+            cursor: pointer;
             & > svg {
                 width: 2rem;
             }
@@ -316,6 +319,8 @@
             flex-direction: column;
 
             padding: 2rem 1rem;
+
+            min-width: 15rem;
 
             & > .detail {
                 display: flex;
@@ -352,9 +357,78 @@
                         display: flex;
                         justify-content: center;
                         align-items: center;
+
+                        & > svg {
+                            color: black;
+                        }
                     }
                 }
             }
+        }
+
+        &.participants {
+            & > h3 {
+                color: var(--grey-scale-8);
+                font-size: 1.5rem;
+                font-weight: 500;
+
+                text-decoration: underline;
+
+                min-width: 15rem;
+
+                padding: 1rem;
+            }
+        }
+    }
+
+    &__option {
+        color: var(--grey-scale-8);
+
+        & > span {
+            text-decoration: underline;
+            font-weight: 600;
+            font-size: 0.85rem;
+        }
+
+        display: flex;
+        justify-content: center;
+
+        flex-direction: column;
+
+        gap: 0.5rem;
+
+        margin-top: 1rem;
+    }
+
+    &__participants {
+        display: flex;
+        justify-content: center;
+
+        flex-direction: column;
+    }
+
+    &__participant {
+        display: flex;
+        align-items: center;
+
+        padding: 0.5rem 0.75rem;
+
+        gap: 0.5rem;
+
+        & > .picture {
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+
+            background-position: center center;
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        color: var(--grey-scale-7);
+
+        &:hover {
+            background-color: var(--grey-scale-2-op);
         }
     }
 }
