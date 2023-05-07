@@ -37,7 +37,7 @@
 
             background-color: var(--grey-scale-3);
 
-            box-shadow: -1px 1px 1px 1px var(--grey-scale-2);
+            box-shadow: 0 0 2px 1px var(--dark-elevation);
         }
 
         &__conversations {
@@ -109,7 +109,7 @@
             height: 4rem;
             background-color: var(--grey-scale-3);
 
-            box-shadow: -1px -1px 3px 1px var(--grey-scale-2);
+            box-shadow: 0 0 2px 1px var(--dark-elevation);
 
             display: flex;
             justify-content: space-between;

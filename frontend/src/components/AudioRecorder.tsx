@@ -1,6 +1,6 @@
+import React, { useState, useRef, useEffect, useCallback } from "react";
 import { faMicrophone } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import React, { useState, useRef, useEffect } from "react";
 import { pushErrorNotification } from "./Notifications";
 
 enum RECORDING_STATE {
@@ -52,7 +52,7 @@ const AudioRecorder: React.FunctionComponent<IAudioRecorderProps> = ({ setAudioB
         }
     };
 
-    const startRecording = () => {
+    const startRecording = useCallback(() => {
         if (!stream) return;
 
         const media = new MediaRecorder(stream, { mimeType: "audio/webm" });
@@ -70,7 +70,7 @@ const AudioRecorder: React.FunctionComponent<IAudioRecorderProps> = ({ setAudioB
         };
 
         setAudioChunks(localAudioChunks);
-    };
+    }, [stream]);
 
     const stopRecording = () => {
         setIsRecording(RECORDING_STATE.RECORDED);
@@ -100,7 +100,7 @@ const AudioRecorder: React.FunctionComponent<IAudioRecorderProps> = ({ setAudioB
             case RECORDING_STATE.RECORDED:
                 break;
             default:
-                throw "That wasn't expected";
+                throw new Error("That wasn't expected");
         }
     };
 
@@ -117,7 +117,7 @@ const AudioRecorder: React.FunctionComponent<IAudioRecorderProps> = ({ setAudioB
         }
 
         return () => clearInterval(timeRef.current);
-    }, [isRecording, stream]);
+    }, [isRecording, stream, startRecording]);
 
     return (
         <label className="send-input" onClick={handleClick}>

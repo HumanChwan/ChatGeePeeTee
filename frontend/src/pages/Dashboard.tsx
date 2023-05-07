@@ -138,14 +138,14 @@ const Dashboard = () => {
             socket.off("message:transfer");
             socket.off("group:join");
         };
-    }, [socket, handleIncomingMessage]);
+    }, [socket, handleIncomingMessage, handleNewConversation]);
 
     if (!user) return <Navigate to="/login" replace />;
 
     const reduceString = (str: string | undefined): string => {
         if (!str) return "";
-        if (str.length < 20) return str;
-        return `${str.slice(0, 17)}...`;
+        if (str.length < 17) return str;
+        return `${str.slice(0, 15)}...`;
     };
 
     return (
@@ -232,6 +232,7 @@ const Dashboard = () => {
                             ? conversations[selectedConversationIdx]
                             : null
                     }
+                    socket={socket}
                 />
             </section>
         </main>

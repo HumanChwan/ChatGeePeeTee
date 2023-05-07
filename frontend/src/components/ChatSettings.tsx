@@ -55,21 +55,23 @@ const ChatSettings: React.FunctionComponent<IChatSettingsProps> = ({ conversatio
             <div className={`chat-settings__general ${participants ? "participants" : "overview"}`}>
                 {!participants ? (
                     <>
-                        <div
-                            style={{
-                                backgroundImage: `url(${conversation.picture || defaultImage})`,
-                            }}
-                            className="picture"
-                            onMouseOver={() => setOverviewPicHover(true)}
-                            onMouseOut={() => setOverviewPicHover(false)}
-                        >
-                            {overviewPicHover && (
-                                <div className="picture-hov">
-                                    <FontAwesomeIcon icon={faPencil} />
-                                </div>
-                            )}
+                        <div className="detail">
+                            <div
+                                style={{
+                                    backgroundImage: `url(${conversation.picture || defaultImage})`,
+                                }}
+                                className="picture"
+                                onMouseOver={() => setOverviewPicHover(true)}
+                                onMouseOut={() => setOverviewPicHover(false)}
+                            >
+                                {overviewPicHover && (
+                                    <div className="hover-screen">
+                                        <FontAwesomeIcon icon={faPencil} />
+                                    </div>
+                                )}
+                            </div>
+                            <div className="name">{conversation.name}</div>
                         </div>
-                        <div className="name">{conversation.name}</div>
                         <label htmlFor="export-to-txt">
                             <span>Export chat to a Text file</span>
                             <button className="btn ett" id="export-to-txt">

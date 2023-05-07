@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import Modal from "./Modal";
 import axios from "axios";
 import { pushErrorNotification } from "./Notifications";
-import { Conversation } from "../pages/Dashboard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faCheck, faXmark } from "@fortawesome/free-solid-svg-icons";
 import { useAuth } from "../contexts/AuthContext";

@@ -1,4 +1,4 @@
-import React, { useRef, useState, useEffect } from "react";
+import React, { useRef, useState, useEffect, useCallback } from "react";
 import { Conversation } from "../pages/Dashboard";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import {
@@ -14,18 +14,27 @@ import { useAuth } from "../contexts/AuthContext";
 import ChatSettings from "./ChatSettings";
 import { pushErrorNotification } from "./Notifications";
 import AudioRecorder from "./AudioRecorder";
+import { Socket } from "socket.io-client";
 
 interface IChatProps {
     conversation: Conversation | null;
+    socket: Socket | null;
 }
 
-const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
+type StatusPayload = {
+    id: string;
+    online: boolean;
+    lastOnline: Date;
+};
+
+const Chat: React.FunctionComponent<IChatProps> = ({ conversation, socket }) => {
     const { user } = useAuth()!;
     const [firstTime, setFirstTime] = useState<boolean>(true);
     const defaultImage = useDefaultImage();
     const [messageContent, setMessageContent] = useState<string>("");
     const [file, setFile] = useState<File | null>(null);
-    const [online, setOnline] = useState<boolean>(false);
+
+    const [status, setStatus] = useState<string | undefined>();
 
     const [openSettings, setOpenSettings] = useState<boolean>(false);
 
@@ -61,10 +70,39 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
                 }
             )
             .then(({ data }) => {
-                if (!data || !data.success) return;
-                setOnline(data.online);
+                if (!data || !data.success) {
+                    setStatus(undefined);
+                    return;
+                }
+                if (data.online) setStatus("Online");
+                else setStatus(`Last Online: ${new Date(data.lastOnline).toLocaleString()}`);
             });
     }, [user, conversation]);
+
+    const handleStatusUpdate = useCallback(
+        (statusPayload: StatusPayload) => {
+            if (!conversation || !conversation.dm || !user) return;
+
+            const otherUser = conversation.members.filter((member) => member.userId !== user.id);
+            if (otherUser.length !== 1) return;
+
+            if (otherUser[0].userId !== statusPayload.id) return;
+
+            if (statusPayload.online) setStatus("Online");
+            else setStatus(`Last Online: ${new Date(statusPayload.lastOnline).toLocaleString()}`);
+        },
+        [conversation, user]
+    );
+
+    useEffect(() => {
+        if (!socket) return;
+
+        socket.on("status:update", handleStatusUpdate);
+
+        return () => {
+            socket.off("status:update");
+        };
+    }, [socket, handleStatusUpdate]);
 
     useEffect(() => {
         if (!conversation) return;
@@ -177,13 +215,14 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation }) => {
                         backgroundImage: `url(${conversation.picture || defaultImage})`,
                     }}
                 ></div>
-                <div className="chat__top__name">{conversation.name}</div>
-                {conversation.dm && (
-                    <div
-                        className={`chat__top__status ${online ? "green" : "red"}`}
-                        title={online ? "Online" : "Offline"}
-                    ></div>
-                )}
+                <div className="chat__top__details">
+                    <div className="chat__top__name">{conversation.name}</div>
+                    {conversation.dm && (
+                        <div className="chat__top__status" title={status}>
+                            {status}
+                        </div>
+                    )}
+                </div>
                 {!conversation.dm && openSettings && (
                     <ChatSettings conversation={conversation} setOpen={setOpenSettings} />
                 )}
