@@ -8,6 +8,8 @@ import { pushErrorNotification, pushSuccessNotification } from "../components/No
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 
+import Logo from "../assets/logo_dark.png";
+
 const Login = () => {
     const [username, setUsername] = useState<string>("");
     const [password, setPassword] = useState<string>("");
@@ -60,6 +62,7 @@ const Login = () => {
 
     return (
         <main className="container login">
+            <img src={Logo} alt="logo" className="login__logo" />
             <form className="login__form" onSubmit={(e) => handleSubmit(e)}>
                 <div className="login__form__input">
                     <input
@@ -98,7 +101,7 @@ const Login = () => {
                 </div>
                 <div className="login__form__links">
                     <Link to="/signup">Don't have an account? Signup.</Link>
-                    <Link to="/forgot-password">Forgot Password?</Link>
+                    {/* <Link to="/forgot-password">Forgot Password?</Link> */}
                 </div>
                 <input type="submit" value={!loading ? "Login" : ""} className="btn" />
                 {loading && <FontAwesomeIcon icon={faCircleNotch} className="spinner" />}

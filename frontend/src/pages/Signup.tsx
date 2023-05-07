@@ -8,6 +8,8 @@ import { pushErrorNotification, pushSuccessNotification } from "../components/No
 import { useAuth } from "../contexts/AuthContext";
 import { Link, useNavigate } from "react-router-dom";
 
+import Logo from "../assets/logo_dark.png";
+
 const Signup = () => {
     const [username, setUsername] = useState<string>("");
     const [email, setEmail] = useState<string>("");
@@ -85,6 +87,7 @@ const Signup = () => {
 
     return (
         <main className="container signup">
+            <img src={Logo} alt="logo" className="signup__logo" />
             <form className="signup__form" onSubmit={(e) => handleSubmit(e)}>
                 <div className="signup__form__input">
                     <input

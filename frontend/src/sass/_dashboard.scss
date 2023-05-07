@@ -38,6 +38,17 @@
             background-color: var(--grey-scale-3);
 
             box-shadow: 0 0 2px 1px var(--dark-elevation);
+
+            & > img {
+                height: 3rem;
+            }
+
+            & > h3 {
+                margin-left: 0.5rem;
+                flex-grow: 1;
+
+                font-weight: 500;
+            }
         }
 
         &__conversations {

@@ -16,6 +16,8 @@ import { pushErrorNotification } from "./Notifications";
 import AudioRecorder from "./AudioRecorder";
 import { Socket } from "socket.io-client";
 
+import Logo from "../assets/logo_dark.png";
+
 interface IChatProps {
     conversation: Conversation | null;
     setConversation: (x: Conversation) => void;
@@ -136,6 +138,7 @@ const Chat: React.FunctionComponent<IChatProps> = ({ conversation, socket, setCo
     if (!conversation)
         return (
             <div className="chat__no-conversation">
+                <img src={Logo} alt="logo" className="chat__no-conversation__logo" />
                 <div>CHAT GEE PEE TEE</div>
                 <div>Click on a conversation on the left, to chat with your buddies.</div>
             </div>

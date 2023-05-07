@@ -13,6 +13,8 @@ import { Navigate, useNavigate } from "react-router-dom";
 import LogoutPrompt from "../components/LogoutPrompt";
 import Chat from "../components/Chat";
 
+import Logo from "../assets/logo_dark.png";
+
 export interface Member {
     userId: string;
     username: string;
@@ -152,7 +154,8 @@ const Dashboard = () => {
         <main className="container dashboard">
             <section className="dashboard__panel">
                 <div className="dashboard__panel__chat-options">
-                    <h3>Chat Gee Pee Tee</h3>
+                    <img src={Logo} alt="logo" className="dashboard__panel__chat-options__logo" />
+                    <h3>Chat GEE PEE TEE</h3>
                     <NewChatOptions setConversations={setConversations} />
                 </div>
                 <div className="dashboard__panel__conversations">
